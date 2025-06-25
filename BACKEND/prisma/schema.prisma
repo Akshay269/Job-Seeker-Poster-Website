@@ -2,35 +2,55 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 generator client {
   provider = "prisma-client-js"
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     // enum: ADMIN or APPLICANT
-  jobs      Job[]    @relation("JobPoster")
-  applications Application[] @relation("Applicant")
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  role         Role
+
+  // Optional fields depending on role
+  name         String?   // Only for Applicants
+  companyName  String?   // Only for HRs
+
+  // Relations
+  jobs         Job[]     @relation("JobPoster")        // Only for HR/Admin
+  applications Application[] @relation("Applicant")    // Only for Applicants
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime   @updatedAt @default(now())
 }
 
 model Job {
-  id        String   @id @default(uuid())
-  title     String
-  description String
-  postedBy  User     @relation("JobPoster", fields: [postedById], references: [id])
-  postedById String
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  location     String
+  salary       String
+
+  postedBy     User     @relation("JobPoster", fields: [postedById], references: [id])
+  postedById   String
+
   applications Application[]
+
+  createdAt    DateTime @default(now())
 }
 
 model Application {
-  id        String   @id @default(uuid())
-  resume    String
-  job       Job      @relation(fields: [jobId], references: [id])
-  jobId     String
-  applicant User     @relation("Applicant", fields: [applicantId], references: [id])
-  applicantId String
+  id           String   @id @default(uuid())
+  resume       String
+
+  job          Job      @relation(fields: [jobId], references: [id])
+  jobId        String
+
+  applicant    User     @relation("Applicant", fields: [applicantId], references: [id])
+  applicantId  String
+
+  createdAt    DateTime @default(now())
 }
 
 enum Role {
