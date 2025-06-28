@@ -1,8 +1,10 @@
 
 import Login from "../components/Login";
 import Contact from "../components/Contact";
+import useAuthStore from "../store/authStore";
 
 const Home = () => {
+  const { isLoggedIn, user } = useAuthStore();
    return (
     <>
       <section
@@ -20,7 +22,21 @@ const Home = () => {
       </section>
       
       
-      <Login/>
+        <section
+        id="login"
+        className="h-screen flex items-center justify-center bg-gray-100"
+      >
+        {isLoggedIn ? (
+          <div className="text-center space-y-2">
+            <h2 className="text-3xl font-semibold text-green-700">
+              Welcome back, {user?.name || user?.email}
+            </h2>
+            <p className="text-lg">You are logged in as {user?.role}</p>
+          </div>
+        ) : (
+          <Login />
+        )}
+      </section>
        <Contact/>
       
     </>

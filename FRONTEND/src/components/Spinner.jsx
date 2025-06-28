@@ -1,8 +1,18 @@
-
+// Spinner.jsx
 import { Loader2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const Spinner = ({ className = "" }) => (
-  <Loader2Icon className={`animate-spin w-5 h-5 text-blue-600 ${className}`} />
-);
+export default function Spinner({ minDuration = 5000, className = "" }) {
+  const [visible, setVisible] = useState(true);
 
-export default Spinner;
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), minDuration);
+    return () => clearTimeout(timer);
+  }, [minDuration]);
+
+  return (
+    visible && (
+      <Loader2Icon className={`animate-spin ${className}`} />
+    )
+  );
+}

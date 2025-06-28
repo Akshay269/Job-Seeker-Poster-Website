@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
-import {toast} from 'react-hot-toast';
+import { toast } from "react-hot-toast";
 
 const input =
   "w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300";
@@ -24,21 +24,21 @@ const Register = () => {
 
   const onApplicantSubmit = async (data) => {
     try {
-    await API.post('/auth/register', { ...data, role: "APPLICANT" });
-      toast.success('Registration successful. Please login.');
-      navigate("/");
-    } catch(err) {
-      toast.error(err?.response?.data?.message || 'Registration failed');
+      await API.post("/auth/register", { ...data, role: "APPLICANT" });
+      toast.success("Registration successful. Please login.");
+      setTimeout(() => navigate("/"), 800);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Registration failed");
     }
   };
 
   const onHRSubmit = async (data) => {
     try {
-    await API.post('/auth/register', { ...data, role: "ADMIN" });
-      toast.success('Registration successful. Please login.');
-      navigate("/");
-    } catch(err) {
-      toast.error(err?.response?.data?.message || 'Registration failed');
+      await API.post("/auth/register", { ...data, role: "ADMIN" });
+      toast.success("Registration successful. Please login.");
+      setTimeout(() => navigate("/"), 800);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Registration failed");
     }
   };
 
@@ -59,6 +59,10 @@ const Register = () => {
           <input
             {...registerApplicant("name", {
               required: "Full name is required",
+              minLength: {
+                value: 2,
+                message: "Full name must be at least 2 characters",
+              },
             })}
             placeholder="Full Name"
             className={input}
@@ -68,7 +72,13 @@ const Register = () => {
           )}
 
           <input
-            {...registerApplicant("email", { required: "Email is required" })}
+            {...registerApplicant("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Invalid email format",
+              },
+            })}
             placeholder="Email"
             className={input}
           />
@@ -80,6 +90,12 @@ const Register = () => {
             type="password"
             {...registerApplicant("password", {
               required: "Password is required",
+              pattern: {
+                value:
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                message:
+                  "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
+              },
             })}
             placeholder="Password"
             className={input}
@@ -115,6 +131,10 @@ const Register = () => {
           <input
             {...registerHR("companyName", {
               required: "Company name is required",
+              minLength: {
+                value: 2,
+                message: "Company name must be at least 2 characters",
+              },
             })}
             placeholder="Company Name"
             className={input}
@@ -124,7 +144,13 @@ const Register = () => {
           )}
 
           <input
-            {...registerHR("email", { required: "Email is required" })}
+            {...registerHR("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Invalid email format",
+              },
+            })}
             placeholder="Work Email"
             className={input}
           />
@@ -134,7 +160,15 @@ const Register = () => {
 
           <input
             type="password"
-            {...registerHR("password", { required: "Password is required" })}
+            {...registerHR("password", {
+              required: "Password is required",
+              pattern: {
+                value:
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                message:
+                  "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
+              },
+            })}
             placeholder="Password"
             className={input}
           />

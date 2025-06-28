@@ -3,7 +3,8 @@ import API from "../api/axios";
 import useAuthStore from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 import Spinner from "./Spinner";
-import {toast} from 'react-hot-toast';
+import { toast } from "react-hot-toast";
+import { useEffect } from "react";
 
 const Login = () => {
   const {
@@ -14,6 +15,10 @@ const Login = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    console.log("isSubmitting changed:", isSubmitting);
+  }, [isSubmitting]);
+
   const onSubmit = async (data) => {
     try {
       const res = await API.post("/auth/login", data);
@@ -21,14 +26,14 @@ const Login = () => {
       setAuth(user, token);
       toast.success(`Welcome back, ${user.name || user.email}`);
       if (user.role === "APPLICANT") {
-        navigate("/jobs");
+        setTimeout(() => navigate("/jobs"), 800);
       } else if (user.role === "ADMIN") {
-        navigate("/dashboard");
+        setTimeout(() => navigate("/dashboard"), 800);
       } else {
-        navigate("/");
+        setTimeout(() => navigate("/"), 800);
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Login failed');
+      toast.error(err?.response?.data?.message || "Login failed");
     }
   };
 
@@ -56,7 +61,13 @@ const Login = () => {
         {errors.role && <p className="text-red-500">{errors.role.message}</p>}
 
         <input
-          {...register("email", { required: "Email is required" })}
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "Invalid email format",
+            },
+          })}
           placeholder="Email"
           className={input}
         />
@@ -64,7 +75,15 @@ const Login = () => {
 
         <input
           type="password"
-          {...register("password", { required: "Password is required" })}
+          {...register("password", {
+            required: "Password is required",
+            pattern: {
+              value:
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+              message:
+                "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
+            },
+          })}
           placeholder="Password"
           className={input}
         />
