@@ -1,197 +1,217 @@
 import { useForm } from "react-hook-form";
 import API from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
-
-const input =
-  "w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300";
 
 const Register = () => {
   const navigate = useNavigate();
-
   const {
-    register: registerApplicant,
-    handleSubmit: handleApplicantSubmit,
-    formState: { errors: applicantErrors, isSubmitting: isSubmittingApplicant },
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm();
 
-  const {
-    register: registerHR,
-    handleSubmit: handleHRSubmit,
-    formState: { errors: hrErrors, isSubmitting: isSubmittingHR },
-  } = useForm();
+  const [role, setRole] = useState("APPLICANT");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const onApplicantSubmit = async (data) => {
+  const onSubmit = async (data) => {
     try {
-      await API.post("/auth/register", { ...data, role: "APPLICANT" });
+      await API.post("/auth/register", { ...data, role });
       toast.success("Registration successful. Please login.");
-      setTimeout(() => navigate("/"), 800);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Registration failed");
-    }
-  };
-
-  const onHRSubmit = async (data) => {
-    try {
-      await API.post("/auth/register", { ...data, role: "ADMIN" });
-      toast.success("Registration successful. Please login.");
-      setTimeout(() => navigate("/"), 800);
+      setTimeout(() => navigate("/signin"), 800);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Registration failed");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">
-        Register to Job Portal
-      </h1>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 pt-10 pb-10">
+      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl ">
+        <Link to="/" className="text-gray-500 text-sm mb-4 inline-block hover:underline">
+          ← Back to Home
+        </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl bg-white p-8 rounded-lg shadow">
-        {/* Applicant Form */}
-        <form
-          onSubmit={handleApplicantSubmit(onApplicantSubmit)}
-          className="space-y-4 border-r md:pr-8"
-        >
-          <h2 className="text-2xl font-semibold text-blue-700">Applicant</h2>
+        <div className="flex justify-center mb-4">
+          <div className="w-12 h-12 bg-black text-white rounded-lg flex items-center justify-center text-lg font-bold">
+            JP
+          </div>
+        </div>
 
-          <input
-            {...registerApplicant("name", {
-              required: "Full name is required",
-              minLength: {
-                value: 2,
-                message: "Full name must be at least 2 characters",
-              },
-            })}
-            placeholder="Full Name"
-            className={input}
-          />
-          {applicantErrors.name && (
-            <p className="text-red-500">{applicantErrors.name.message}</p>
+        <h2 className="text-2xl font-bold text-center text-black mb-1">Create Account</h2>
+        <p className="text-center text-gray-600 mb-6">
+          Join JobPortal and start your journey
+        </p>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Role Toggle */}
+          <div className="flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setRole("APPLICANT")}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm border ${
+                role === "APPLICANT"
+                  ? "bg-black text-white"
+                  : "bg-white text-black border-gray-300"
+              }`}
+            >
+              Job Seeker
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("ADMIN")}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm border ${
+                role === "ADMIN"
+                  ? "bg-black text-white"
+                  : "bg-white text-black border-gray-300"
+              }`}
+            >
+              Employer
+            </button>
+          </div>
+
+          {/* Name Fields */}
+          {role === "APPLICANT" ? (
+            <div className="flex gap-2">
+              <div className="w-1/2">
+                <label className="text-sm">First Name</label>
+                <input
+                  {...register("firstName", { required: "First name is required" })}
+                  placeholder="John"
+                  className={input}
+                />
+                {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName.message}</p>}
+              </div>
+              <div className="w-1/2">
+                <label className="text-sm">Last Name</label>
+                <input
+                  {...register("lastName", { required: "Last name is required" })}
+                  placeholder="Doe"
+                  className={input}
+                />
+                {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName.message}</p>}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label className="text-sm">Company Name</label>
+              <input
+                {...register("companyName", { required: "Company name is required" })}
+                placeholder="Acme Inc."
+                className={input}
+              />
+              {errors.companyName && <p className="text-red-500 text-sm">{errors.companyName.message}</p>}
+            </div>
           )}
 
-          <input
-            {...registerApplicant("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Invalid email format",
-              },
-            })}
-            placeholder="Email"
-            className={input}
-          />
-          {applicantErrors.email && (
-            <p className="text-red-500">{applicantErrors.email.message}</p>
-          )}
+          {/* Email */}
+          <div>
+            <label className="text-sm">Email Address</label>
+            <input
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Invalid email format",
+                },
+              })}
+              placeholder="john@example.com"
+              className={input}
+            />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+          </div>
 
-          <input
-            type="password"
-            {...registerApplicant("password", {
-              required: "Password is required",
-              pattern: {
-                value:
-                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                message:
-                  "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
-              },
-            })}
-            placeholder="Password"
-            className={input}
-          />
-          {applicantErrors.password && (
-            <p className="text-red-500">{applicantErrors.password.message}</p>
-          )}
+          {/* Password */}
+          <div>
+            <label className="text-sm">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters",
+                  },
+                })}
+                placeholder="Create a password"
+                className={`${input} pr-10`}
+              />
+              <div
+                className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </div>
+            </div>
+            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmittingApplicant}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-          >
-            {isSubmittingApplicant ? (
-              <>
-                <Spinner className="text-white w-4 h-4" />
-              </>
-            ) : (
-              "Register"
+          {/* Confirm Password */}
+          <div>
+            <label className="text-sm">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
+                })}
+                placeholder="Confirm your password"
+                className={`${input} pr-10`}
+              />
+              <div
+                className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </div>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
             )}
-          </button>
-        </form>
+          </div>
 
-        {/* HR/Job Poster Form */}
-        <form
-          onSubmit={handleHRSubmit(onHRSubmit)}
-          className="space-y-4 md:pl-8"
-        >
-          <h2 className="text-2xl font-semibold text-green-700">
-            HR / Job Poster
-          </h2>
+          {/* Terms and Conditions */}
+          <label className="text-sm flex items-start gap-2">
+            <input type="checkbox" className="mt-1" required />
+            I agree to the{" "}
+            <a href="#" className="underline text-black">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="#" className="underline text-black">
+              Privacy Policy
+            </a>
+          </label>
 
-          <input
-            {...registerHR("companyName", {
-              required: "Company name is required",
-              minLength: {
-                value: 2,
-                message: "Company name must be at least 2 characters",
-              },
-            })}
-            placeholder="Company Name"
-            className={input}
-          />
-          {hrErrors.companyName && (
-            <p className="text-red-500">{hrErrors.companyName.message}</p>
-          )}
-
-          <input
-            {...registerHR("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Invalid email format",
-              },
-            })}
-            placeholder="Work Email"
-            className={input}
-          />
-          {hrErrors.email && (
-            <p className="text-red-500">{hrErrors.email.message}</p>
-          )}
-
-          <input
-            type="password"
-            {...registerHR("password", {
-              required: "Password is required",
-              pattern: {
-                value:
-                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                message:
-                  "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
-              },
-            })}
-            placeholder="Password"
-            className={input}
-          />
-          {hrErrors.password && (
-            <p className="text-red-500">{hrErrors.password.message}</p>
-          )}
-
+          {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmittingHR}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
+            disabled={isSubmitting}
+            className="w-full h-11 bg-black text-white rounded-lg text-lg font-semibold hover:bg-gray-900 transition"
           >
-            {isSubmittingHR ? (
-              <>
-                <Spinner className="text-white w-4 h-4" />
-              </>
-            ) : (
-              "Register"
-            )}{" "}
+            {isSubmitting ? <Spinner className="text-white w-4 h-4" /> : "Create Account"}
           </button>
         </form>
+
+        <p className="text-center text-sm text-gray-600 mt-6">
+          Already have an account?{" "}
+          <Link to="/signin" className="font-semibold text-black hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
 };
+
+const input =
+  "w-full border border-gray-300 rounded-md px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-black";
+
 export default Register;

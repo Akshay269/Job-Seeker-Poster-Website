@@ -1,8 +1,8 @@
-import React from "react";
-import { Link as ScrollLink } from "react-scroll";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
-import {toast} from 'react-hot-toast';
+import { toast } from "react-hot-toast";
+import { User, Building2 } from "lucide-react";
+
 const Navbar = () => {
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
@@ -10,76 +10,63 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
-    navigate("/");
+    setTimeout(() => navigate("/"), 1000);
   };
 
   return (
-    <nav className="bg-blue-900 text-white py-4 px-6 sticky top-0 z-50 shadow-md">
-      <div className="flex justify-between items-center w-full">
-        <div className="text-xl font-bold">Job Portal</div>
+    <nav className="bg-white text-black border-b border-gray-200 shadow-sm py-3 px-6 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Left: Logo */}
+        <RouterLink to="/" className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-sm">JP</span>
+          </div>
+          <span className="font-bold text-lg">JobPortal</span>
+        </RouterLink>
 
-        <div className="flex space-x-6 items-center">
-          <ScrollLink
-            to="home"
-            smooth={true}
-            duration={500}
-            className="cursor-pointer hover:text-yellow-400 text-lg"
-          >
-            Home
-          </ScrollLink>
-
-          <ScrollLink
-            to="about"
-            smooth={true}
-            duration={500}
-            className="cursor-pointer hover:text-yellow-400 text-lg"
-          >
+        {/* Center: Navigation Links */}
+        <div className="hidden md:flex gap-8 text-sm font-medium">
+          <RouterLink to="/jobs" className="hover:text-gray-700">
+            Find Jobs
+          </RouterLink>
+          <RouterLink to="/companies" className="hover:text-gray-700">
+            Companies
+          </RouterLink>
+          <RouterLink to="/post-job" className="hover:text-gray-700">
+            Post Jobs
+          </RouterLink>
+          <RouterLink to="/about" className="hover:text-gray-700">
             About
-          </ScrollLink>
+          </RouterLink>
+        </div>
 
-          <ScrollLink
-            to="contact"
-            smooth={true}
-            duration={500}
-            className="cursor-pointer hover:text-yellow-400 text-lg"
-          >
-            Contact
-          </ScrollLink>
-
+        {/* Right: Auth Links */}
+        <div className="flex items-center gap-4">
           {!isLoggedIn ? (
             <>
-              <ScrollLink
-                to="login"
-                smooth={true}
-                duration={500}
-                className="cursor-pointer hover:text-yellow-400 text-lg"
-              >
-                Login
-              </ScrollLink>
               <RouterLink
-                to="/register"
-                className="cursor-pointer hover:text-yellow-400 text-lg"
+                to="/signin"
+                className="flex items-center gap-1 text-sm text-black hover:text-gray-700"
               >
-                Register
+                <User className="w-4 h-4" />
+                <span>Login</span>
+              </RouterLink>
+              <RouterLink
+                to="/signup"
+                className="flex items-center gap-1 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 text-sm font-medium cursor-pointer"
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Sign Up</span>
               </RouterLink>
             </>
           ) : (
             <>
-              {user?.role === "APPLICANT" && (
-                <RouterLink to="/jobs" className="hover:text-yellow-400 text-lg">
-                  Jobs
-                </RouterLink>
-              )}
-              {user?.role === "ADMIN" && (
-                <RouterLink to="/dashboard" className="hover:text-yellow-400 text-lg">
-                  Dashboard
-                </RouterLink>
-              )}
-
-              <span className="text-sm italic">Hi, {user?.name || user?.email}</span>
+              <span className="truncate max-w-[100px] text-sm font-semibold">
+                {user?.name || user?.email}
+              </span>
               <button
                 onClick={handleLogout}
-                className="bg-red-500 px-3 py-1 rounded hover:bg-red-600 text-sm ml-2"
+                className="text-sm text-black hover:text-gray-700"
               >
                 Logout
               </button>
