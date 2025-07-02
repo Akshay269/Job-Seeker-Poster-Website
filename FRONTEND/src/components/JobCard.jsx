@@ -1,6 +1,18 @@
 import { MapPin, Clock, DollarSign, Building2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const JobCard = ({ title, company, location, type, salary, postedTime, tags }) => {
+const JobCard = ({ job }) => {
+  if (!job) return null;
+  const {
+    id,
+    title,
+    companyName,
+    location,
+    type,
+    salary,
+    postedTime,
+    tags = [],
+  } = job;
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-black transition-all duration-300 cursor-pointer group">
       <div className="flex items-start justify-between mb-4">
@@ -12,12 +24,14 @@ const JobCard = ({ title, company, location, type, salary, postedTime, tags }) =
             <h3 className="text-lg font-semibold text-black group-hover:text-gray-700 transition-colors">
               {title}
             </h3>
-            <p className="text-gray-600">{company}</p>
+            <p className="text-gray-600">{companyName}</p>
           </div>
         </div>
-        <button className="text-sm px-4 py-1.5 rounded-md hover:bg-gray-100 border border-gray-300 text-black">
-          Apply
-        </button>
+        <Link to={`/apply/${id}`}>
+          <button className="text-sm px-4 py-1.5 rounded-md hover:bg-gray-100 border border-gray-300 text-black">
+            Apply
+          </button>
+        </Link>
       </div>
 
       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
@@ -46,9 +60,7 @@ const JobCard = ({ title, company, location, type, salary, postedTime, tags }) =
         ))}
       </div>
 
-      <div className="text-xs text-gray-500">
-        Posted {postedTime}
-      </div>
+      <div className="text-xs text-gray-500">Posted {postedTime}</div>
     </div>
   );
 };

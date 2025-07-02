@@ -3,6 +3,7 @@ import { ArrowRight, Star, Shield, Clock, TrendingUp } from "lucide-react";
 import JobCard from "../components/JobCard";
 import CompanyCard from "../components/CompanyCard";
 import DirectServices from "../components/DirectServices";
+import Anvaya from "../assets/Anvaya.png";
 
 const Home = () => {
   // const { isLoggedIn, user } = useAuthStore();
@@ -67,8 +68,14 @@ const Home = () => {
   return (
     <>
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl font-bold text-black">Welcome to Home</h1>
+        <div className="flex flex-col items-center text-center space-y-6">
+          <img
+            src={Anvaya}
+            alt="Anvaya Logo"
+            className="h-100 w-auto object-contain"
+          />
+          <h1 className="text-5xl font-bold text-black">Welcome to Anvaya</h1>
+          
         </div>
       </section>
 
@@ -91,8 +98,8 @@ const Home = () => {
           </div>
 
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-            {featuredJobs.map((job, index) => (
-              <JobCard key={index} {...job} />
+            {featuredJobs.map((job) => (
+              <JobCard key={job.id} job={job}/>
             ))}
           </div>
 

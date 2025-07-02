@@ -3,6 +3,11 @@ import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
 import { User, Building2 } from "lucide-react";
 
+import Anvaya2 from "../assets/Anvaya2.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserTie } from "@fortawesome/free-solid-svg-icons";
+import Anvaya from "../assets/Anvaya.png";
+
 const Navbar = () => {
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
@@ -14,18 +19,24 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white text-black border-b border-gray-200 shadow-sm py-3 px-6 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <nav className="bg-white text-black border-b border-gray-200 shadow-sm sticky top-0 z-50">
+      <div className="max-w-9xl mx-auto flex items-center justify-between">
         {/* Left: Logo */}
-        <RouterLink to="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-sm">JP</span>
-          </div>
-          <span className="font-bold text-lg">JobPortal</span>
-        </RouterLink>
+        <div className="pl-10">
+          <RouterLink to="/" className="flex items-center gap-2">
+            {/* <LogoCenter/> */}
+            <div className="h-23 w-auto flex items-center">
+              <img
+                src={Anvaya2}
+                alt="Anvaya Logo"
+                className="h-23 w-30 object-cover"
+              />
+            </div>
+          </RouterLink>
+        </div>
 
         {/* Center: Navigation Links */}
-        <div className="hidden md:flex gap-8 text-sm font-medium">
+        <div className="hidden md:flex gap-8 text-lg font-medium">
           <RouterLink to="/jobs" className="hover:text-gray-700">
             Find Jobs
           </RouterLink>
@@ -41,12 +52,12 @@ const Navbar = () => {
         </div>
 
         {/* Right: Auth Links */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pr-10">
           {!isLoggedIn ? (
             <>
               <RouterLink
                 to="/signin"
-                className="flex items-center gap-1 text-sm text-black hover:text-gray-700"
+                className="flex items-center gap-1 text-lg text-black hover:text-gray-700"
               >
                 <User className="w-4 h-4" />
                 <span>Login</span>
@@ -61,12 +72,18 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <span className="truncate max-w-[100px] text-sm font-semibold">
-                {user?.name || user?.email}
-              </span>
+              <div className="flex items-center gap-2 text-lg">
+                <FontAwesomeIcon
+                  icon={faUserTie}
+                  className="text-gray-700 w-4 h-4"
+                />
+                <span className="truncate max-w-[100px] font-semibold">
+                  {user?.name || user?.email}
+                </span>
+              </div>
               <button
                 onClick={handleLogout}
-                className="text-sm text-black hover:text-gray-700"
+                className="text-lg text-black hover:text-gray-700 font-semibold"
               >
                 Logout
               </button>

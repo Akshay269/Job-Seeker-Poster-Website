@@ -21,7 +21,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await API.post("/auth/login", data);
+      const res = await API.post("/auth/login", { ...data, role });
       const { user, token } = res.data;
       setAuth(user, token);
       toast.success(`Welcome back, ${user.name || user.email}`);

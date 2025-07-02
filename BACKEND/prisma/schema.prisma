@@ -8,49 +8,47 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  password     String
-  role         Role
-
-  // Optional fields depending on role
-  name         String?   // Only for Applicants
-  companyName  String?   // Only for HRs
-
-  // Relations
-  jobs         Job[]     @relation("JobPoster")        // Only for HR/Admin
-  applications Application[] @relation("Applicant")    // Only for Applicants
-
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime   @updatedAt @default(now())
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  role          Role
+  name          String?
+  companyName   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  jobs          Job[]          @relation("JobPoster")
+  applications  Application[]  @relation("Applicant")
 }
 
 model Job {
-  id           String   @id @default(uuid())
-  title        String
-  description  String
-  location     String
-  salary       String
-
-  postedBy     User     @relation("JobPoster", fields: [postedById], references: [id])
-  postedById   String
-
-  applications Application[]
-
-  createdAt    DateTime @default(now())
+  id            String         @id @default(uuid())
+  title         String
+  description   String
+  location      String?
+  type          String?        // e.g., Full-time, Part-time
+  postedBy      User           @relation("JobPoster", fields: [postedById], references: [id])
+  postedById    String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  applications  Application[]
 }
 
 model Application {
-  id           String   @id @default(uuid())
-  resume       String
+  id            String     @id @default(uuid())
+  resume        String     // Can store URL or base64 string
+  job           Job        @relation(fields: [jobId], references: [id])
+  jobId         String
+  applicant     User       @relation("Applicant", fields: [applicantId], references: [id])
+  applicantId   String
 
-  job          Job      @relation(fields: [jobId], references: [id])
-  jobId        String
-
-  applicant    User     @relation("Applicant", fields: [applicantId], references: [id])
-  applicantId  String
-
-  createdAt    DateTime @default(now())
+  // Multi-step form fields
+  fullName      String
+  email         String
+  phone         String
+  experience    Int?
+  lastCompany   String?
+  coverLetter   String?
+  appliedAt     DateTime   @default(now())
 }
 
 enum Role {
