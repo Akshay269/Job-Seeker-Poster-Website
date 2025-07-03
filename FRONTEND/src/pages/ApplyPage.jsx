@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useForm, FormProvider } from "react-hook-form";
 import API from "../api/axios";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Spinner from "../components/Spinner";
@@ -18,14 +19,18 @@ const ApplyPage = () => {
   const [loadingJob, setLoadingJob] = useState(true);
   const totalSteps = 7;
 
-  const [formData, setFormData] = useState({
-    personalInfo: {},
-    contactInfo: {},
-    experience: {},
-    education: {},
-    skills: {},
-    documents: {},
+  const methods = useForm({
+    defaultValues: {
+      personalInfo: {},
+      contactInfo: {},
+      experience: [{ jobTitle: "", company: "", startDate: "" }],
+      education: { educations: [] },
+      skills: { skills: [], certifications: [], languages: [] },
+      documents: { resume: null, coverLetter: null, portfolio: null, other: [] },
+    },
   });
+
+  const { handleSubmit, trigger, formState: { isSubmitting } } = methods;
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -42,8 +47,6 @@ const ApplyPage = () => {
     fetchJob();
   }, [jobId]);
 
-  const progress = (currentStep / totalSteps) * 100;
-
   const stepTitles = [
     "Personal Information",
     "Contact Details",
@@ -54,15 +57,11 @@ const ApplyPage = () => {
     "Review & Submit",
   ];
 
-  const updateFormData = (step, data) => {
-    setFormData((prev) => ({
-      ...prev,
-      [step]: data,
-    }));
-  };
+  const progress = (currentStep / totalSteps) * 100;
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
+  const nextStep = async () => {
+    const isValid = await trigger();
+    if (isValid && currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -73,57 +72,30 @@ const ApplyPage = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Submitting application:", formData);
-    // TODO: Post this to backend with jobId
+  const onSubmit = (data) => {
+    console.log("Final Form Submission", data);
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep]);
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <PersonalInfoForm
-            data={formData.personalInfo}
-            onUpdate={(data) => updateFormData("personalInfo", data)}
-          />
-        );
+        return <PersonalInfoForm />;
       case 2:
-        return (
-          <ContactInfoForm
-            data={formData.contactInfo}
-            onUpdate={(data) => updateFormData("contactInfo", data)}
-          />
-        );
+        return <ContactInfoForm />;
       case 3:
-        return (
-          <ExperienceForm
-            data={formData.experience}
-            onUpdate={(data) => updateFormData("experience", data)}
-          />
-        );
+        return <ExperienceForm />;
       case 4:
-        return (
-          <EducationForm
-            data={formData.education}
-            onUpdate={(data) => updateFormData("education", data)}
-          />
-        );
+        return <EducationForm />;
       case 5:
-        return (
-          <SkillsForm
-            data={formData.skills}
-            onUpdate={(data) => updateFormData("skills", data)}
-          />
-        );
+        return <SkillsForm />;
       case 6:
-        return (
-          <DocumentsForm
-            data={formData.documents}
-            onUpdate={(data) => updateFormData("documents", data)}
-          />
-        );
+        return <DocumentsForm />;
       case 7:
-        return <ReviewForm data={formData} />;
+        return <ReviewForm />;
       default:
         return null;
     }
@@ -168,7 +140,7 @@ const ApplyPage = () => {
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-4">
@@ -193,41 +165,51 @@ const ApplyPage = () => {
         </div>
       </div>
 
-      {/* Form Body */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm border p-8">
-          {renderStep()}
-        </div>
+      {/* Form */}
+      <FormProvider {...methods}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="max-w-4xl mx-auto px-4 py-8"
+        >
+          <div className="bg-white rounded-lg shadow-sm border p-8">
+            {renderStep()}
+          </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between items-center mt-8">
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 1}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
-          >
-            <ArrowLeft className="w-4 h-4 inline mr-1" />
-            Previous
-          </button>
+          {/* Navigation */}
+          <div className="flex justify-between items-center mt-8">
+            {currentStep > 1 && (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+              >
+                <ArrowLeft className="w-4 h-4 inline mr-1" />
+                Previous
+              </button>
+            )}
 
-          {currentStep === totalSteps ? (
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
-            >
-              <Check className="w-4 h-4 inline mr-1" />
-              Submit Application
-            </button>
-          ) : (
-            <button
-              onClick={nextStep}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
-            >
-              Next <ArrowRight className="w-4 h-4 inline ml-1" />
-            </button>
-          )}
-        </div>
-      </div>
+            {currentStep === totalSteps ? (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+              >
+                <Check className="w-4 h-4 inline mr-1" />
+                Submit Application
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={nextStep}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+              >
+                Next <ArrowRight className="w-4 h-4 inline ml-1" />
+              </button>
+            )}
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 };
