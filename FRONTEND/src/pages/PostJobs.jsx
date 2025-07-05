@@ -18,6 +18,7 @@ const PostJobs = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      console.log(data);
       const res = await API.post("/jobs/post-job", data);
       toast.success(`Job "${res.data.title}" posted successfully!`);
       navigate("/dashboard");
@@ -29,7 +30,7 @@ const PostJobs = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-lg mt-10">
+    <div className="max-w-5xl mx-auto p-6 mb-10 bg-white shadow-md rounded-lg mt-10">
       {loading && <Spinner isLoading={true} />}
 
       <h2 className="text-3xl font-bold mb-2 text-black">Post a Job</h2>

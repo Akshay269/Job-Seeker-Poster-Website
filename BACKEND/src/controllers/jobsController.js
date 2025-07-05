@@ -40,6 +40,10 @@ exports.getJobById = async (req, res) => {
   }
 };
 
+
+
+
+
 exports.postJob = async (req, res) => {
   const {
     title,
@@ -57,8 +61,8 @@ exports.postJob = async (req, res) => {
     companyWebsite,
     deadline
   } = req.body;
-
-  const userId = req.user.id; // set in authenticate middleware
+  console.log("user",req.user);
+  const userId = req.user.userId; 
 
   try {
     const newJob = await prisma.job.create({
@@ -77,7 +81,7 @@ exports.postJob = async (req, res) => {
         contactEmail,
         companyWebsite,
         deadline: deadline ? new Date(deadline) : null,
-        postedById: userId
+        postedById: userId, 
       }
     });
 

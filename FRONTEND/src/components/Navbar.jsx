@@ -22,7 +22,7 @@ const Navbar = () => {
     } catch {
       toast.error("Logout failed");
     } finally {
-      setTimeout(() => setLoading(false), 800); 
+      setTimeout(() => setLoading(false), 800);
     }
   };
 
@@ -31,7 +31,10 @@ const Navbar = () => {
     try {
       if (!isLoggedIn) {
         toast.error("Please login as Job-poster to post jobs first");
-        setTimeout(() => navigate("/signin", { state: { role: "ADMIN" } }), 500);
+        setTimeout(
+          () => navigate("/signin", { state: { role: "ADMIN" } }),
+          500
+        );
       } else if (user?.role === "ADMIN") {
         navigate("/post-job");
       }
@@ -69,7 +72,10 @@ const Navbar = () => {
                 <RouterLink to="/companies" className="hover:text-gray-700">
                   Companies
                 </RouterLink>
-                <button onClick={handlePostJobClick} className="hover:text-gray-700">
+                <button
+                  onClick={handlePostJobClick}
+                  className="hover:text-gray-700"
+                >
                   Post Jobs
                 </button>
                 <RouterLink to="/about" className="hover:text-gray-700">
@@ -120,23 +126,23 @@ const Navbar = () => {
                 </RouterLink>
               </>
             ) : (
-              <>
-                <div className="flex items-center gap-2 text-lg">
+              <div className="relative flex items-center gap-6 bg-gray-100 px-5 py-3 rounded-xl hover:shadow-lg transition">
+                <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                   <FontAwesomeIcon
                     icon={faUserTie}
-                    className="text-gray-700 w-4 h-4"
+                    className="text-gray-700 w-6 h-6"
                   />
-                  <span className="truncate max-w-[100px] font-semibold">
+                  <span className="truncate max-w-[140px]">
                     {user?.name || user?.email}
                   </span>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="text-lg text-black hover:text-gray-700 font-semibold"
+                  className="text-base px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-bold cursor-pointer"
                 >
                   Logout
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
