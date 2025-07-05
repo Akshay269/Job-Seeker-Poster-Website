@@ -30,7 +30,11 @@ const ApplyPage = () => {
     },
   });
 
-  const { handleSubmit, trigger, formState: { isSubmitting } } = methods;
+  const {
+    handleSubmit,
+    trigger,
+    formState: { isSubmitting },
+  } = methods;
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -110,7 +114,14 @@ const ApplyPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50">
+      {/* Full-Screen Spinner Overlay */}
+      {loadingJob && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Spinner className="w-8 h-8 text-black" />
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">

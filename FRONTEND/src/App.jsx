@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import ApplyPage from "./pages/ApplyPage";
+import PostJobs from "./pages/PostJobs";
 
 const App = () => {
   return (
@@ -27,6 +28,14 @@ const App = () => {
           element={
             <ProtectedRoute role="APPLICANT">
               <ApplyPage />
+            </ProtectedRoute>
+          }
+        />
+          <Route
+          path="/post-job"
+          element={
+            <ProtectedRoute requireAuth={true} role="ADMIN">
+              <PostJobs/>
             </ProtectedRoute>
           }
         />

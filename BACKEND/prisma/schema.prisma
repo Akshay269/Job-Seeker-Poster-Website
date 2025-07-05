@@ -21,16 +21,28 @@ model User {
 }
 
 model Job {
-  id            String         @id @default(uuid())
-  title         String
-  description   String
-  location      String?
-  type          String?        // e.g., Full-time, Part-time
-  postedBy      User           @relation("JobPoster", fields: [postedById], references: [id])
-  postedById    String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  applications  Application[]
+  id              String         @id @default(uuid())
+  title           String
+  companyName     String?
+  location        String
+  salaryRange     String?
+  jobType         String?        // e.g., Full-time, Internship
+  workType        String?        // e.g., Remote, On-site
+  experienceLevel String?        // e.g., Entry, Mid, Senior
+  description     String
+  requirements    String?
+  skills          String?
+  benefits        String?
+  contactEmail    String?
+  companyWebsite  String?
+  deadline        DateTime?
+
+  postedBy        User           @relation("JobPoster", fields: [postedById], references: [id])
+  postedById      String
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  applications    Application[]
 }
 
 model Application {

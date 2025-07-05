@@ -1,12 +1,20 @@
-// import useAuthStore from "../store/authStore";
+import { useEffect, useState } from "react";
 import { ArrowRight, Star, Shield, Clock, TrendingUp } from "lucide-react";
 import JobCard from "../components/JobCard";
 import CompanyCard from "../components/CompanyCard";
 import DirectServices from "../components/DirectServices";
+import Spinner from "../components/Spinner";
 import Anvaya from "../assets/Anvaya.png";
 
 const Home = () => {
-  // const { isLoggedIn, user } = useAuthStore();
+  const [loading, setLoading] = useState(true);
+
+  // Simulate data loading (you can replace this with an API call later)
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const featuredJobs = [
     {
       title: "Senior Frontend Developer",
@@ -36,6 +44,7 @@ const Home = () => {
       tags: ["Figma", "User Research", "Prototyping"],
     },
   ];
+
   const topCompanies = [
     {
       name: "TechCorp",
@@ -65,6 +74,14 @@ const Home = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <Spinner className="w-8 h-8 text-black" />
+      </div>
+    );
+  }
+
   return (
     <>
       <section className="py-16 bg-white">
@@ -75,7 +92,6 @@ const Home = () => {
             className="h-100 w-auto object-contain"
           />
           <h1 className="text-5xl font-bold text-black">Welcome to Anvaya</h1>
-          
         </div>
       </section>
 
@@ -98,8 +114,8 @@ const Home = () => {
           </div>
 
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-            {featuredJobs.map((job) => (
-              <JobCard key={job.id} job={job}/>
+            {featuredJobs.map((job, idx) => (
+              <JobCard key={idx} job={job} />
             ))}
           </div>
 

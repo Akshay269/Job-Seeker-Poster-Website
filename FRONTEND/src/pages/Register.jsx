@@ -12,27 +12,41 @@ const Register = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm();
 
   const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data) => {
+    setLoading(true);
     try {
       await API.post("/auth/register", { ...data, role });
       toast.success("Registration successful. Please login.");
       setTimeout(() => navigate("/signin"), 800);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 pt-10 pb-10">
-      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl ">
-        <Link to="/" className="text-gray-500 text-sm mb-4 inline-block hover:underline">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 pt-10 pb-10 relative">
+      {/* Spinner Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Spinner className="w-8 h-8 text-black" />
+        </div>
+      )}
+
+      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl relative z-10">
+        <Link
+          to="/"
+          className="text-gray-500 text-sm mb-4 inline-block hover:underline"
+        >
           ← Back to Home
         </Link>
 
@@ -42,7 +56,9 @@ const Register = () => {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-black mb-1">Create Account</h2>
+        <h2 className="text-2xl font-bold text-center text-black mb-1">
+          Create Account
+        </h2>
         <p className="text-center text-gray-600 mb-6">
           Join JobPortal and start your journey
         </p>
@@ -80,31 +96,49 @@ const Register = () => {
               <div className="w-1/2">
                 <label className="text-sm">First Name</label>
                 <input
-                  {...register("firstName", { required: "First name is required" })}
+                  {...register("firstName", {
+                    required: "First name is required",
+                  })}
                   placeholder="John"
                   className={input}
                 />
-                {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName.message}</p>}
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm">
+                    {errors.firstName.message}
+                  </p>
+                )}
               </div>
               <div className="w-1/2">
                 <label className="text-sm">Last Name</label>
                 <input
-                  {...register("lastName", { required: "Last name is required" })}
+                  {...register("lastName", {
+                    required: "Last name is required",
+                  })}
                   placeholder="Doe"
                   className={input}
                 />
-                {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName.message}</p>}
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm">
+                    {errors.lastName.message}
+                  </p>
+                )}
               </div>
             </div>
           ) : (
             <div>
               <label className="text-sm">Company Name</label>
               <input
-                {...register("companyName", { required: "Company name is required" })}
+                {...register("companyName", {
+                  required: "Company name is required",
+                })}
                 placeholder="Acme Inc."
                 className={input}
               />
-              {errors.companyName && <p className="text-red-500 text-sm">{errors.companyName.message}</p>}
+              {errors.companyName && (
+                <p className="text-red-500 text-sm">
+                  {errors.companyName.message}
+                </p>
+              )}
             </div>
           )}
 
@@ -122,7 +156,9 @@ const Register = () => {
               placeholder="john@example.com"
               className={input}
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -148,7 +184,9 @@ const Register = () => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </div>
             </div>
-            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
+            )}
           </div>
 
           {/* Confirm Password */}
@@ -173,36 +211,58 @@ const Register = () => {
               </div>
             </div>
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+              <p className="text-red-500 text-sm">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
-          {/* Terms and Conditions */}
-          <label className="text-sm flex items-start gap-2">
-            <input type="checkbox" className="mt-1" required />
-            I agree to the{" "}
-            <a href="#" className="underline text-black">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="#" className="underline text-black">
-              Privacy Policy
-            </a>
-          </label>
+          {/* Terms */}
+          <div>
+            <label className="text-sm flex items-start gap-2">
+              <input
+                type="checkbox"
+                {...register("terms", {
+                  required: "You must agree to the Terms and Privacy Policy",
+                })}
+                className="mt-1"
+              />
+              I agree to the{" "}
+              <a href="#" className="underline text-black">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="#" className="underline text-black">
+                Privacy Policy
+              </a>
+            </label>
+            {errors.terms && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.terms.message}
+              </p>
+            )}
+          </div>
 
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading}
             className="w-full h-11 bg-black text-white rounded-lg text-lg font-semibold hover:bg-gray-900 transition"
           >
-            {isSubmitting ? <Spinner className="text-white w-4 h-4" /> : "Create Account"}
+            {loading ? (
+              <Spinner className="text-white w-4 h-4" />
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Already have an account?{" "}
-          <Link to="/signin" className="font-semibold text-black hover:underline">
+          <Link
+            to="/signin"
+            className="font-semibold text-black hover:underline"
+          >
             Sign in
           </Link>
         </p>

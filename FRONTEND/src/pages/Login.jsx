@@ -1,41 +1,63 @@
 import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import { toast } from "react-hot-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm();
 
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Auto-set role 
+  useEffect(() => {
+    if (location.state?.role === "ADMIN") {
+      setRole("ADMIN");
+    }
+  }, [location.state]);
 
   const onSubmit = async (data) => {
+    setLoading(true);
     try {
       const res = await API.post("/auth/login", { ...data, role });
       const { user, token } = res.data;
+
       setAuth(user, token);
       toast.success(`Welcome back, ${user.name || user.email}`);
+
       if (user.role === "APPLICANT") navigate("/jobs");
       else if (user.role === "ADMIN") navigate("/dashboard");
       else navigate("/signin");
     } catch (err) {
       toast.error(err?.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 pt-10 pb-10 ">
-      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 pt-10 pb-10 relative">
+      {/* Spinner Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Spinner isLoading className="w-10 h-10 text-black" />
+        </div>
+      )}
+
+      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl relative z-10">
         <Link
           to="/"
           className="text-gray-500 text-sm mb-6 inline-block hover:underline"
@@ -83,32 +105,30 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Email Field */}
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {role === "APPLICANT" ? "Email Address" : "Company Email Address"}
             </label>
-            <div className="relative">
-              <input
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Invalid email format",
-                  },
-                })}
-                placeholder="Enter your email"
-                className={input}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+            <input
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Invalid email format",
+                },
+              })}
+              placeholder="Enter your email"
+              className={input}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
-          {/* Password Field */}
+          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -136,40 +156,30 @@ const Login = () => {
             )}
           </div>
 
-          {/* Remember me + Forgot password */}
+          {/* Remember + Forgot */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2">
               <input type="checkbox" className="h-4 w-4" />
               Remember me
             </label>
-            <Link
-              to="/forgot-password"
-              className="text-gray-600 hover:underline"
-            >
+            <Link to="/forgot-password" className="text-gray-600 hover:underline">
               Forgot password?
             </Link>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading}
             className="w-full h-11 bg-black text-white rounded-lg text-lg font-semibold hover:bg-gray-900 transition"
           >
-            {isSubmitting ? (
-              <Spinner className="text-white w-4 h-4" />
-            ) : (
-              "Sign In"
-            )}
+            {loading ? <Spinner className="text-white w-4 h-4" /> : "Sign In"}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="font-semibold text-black hover:underline"
-          >
+          <Link to="/signup" className="font-semibold text-black hover:underline">
             Sign up
           </Link>
         </p>

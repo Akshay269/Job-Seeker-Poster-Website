@@ -18,6 +18,7 @@ exports.getAllJobs = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch jobs" });
   }
 };
+
 exports.getJobById = async (req, res) => {
   try {
     const jobId = req.params.jobId;
@@ -38,3 +39,52 @@ exports.getJobById = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch job" });
   }
 };
+
+exports.postJob = async (req, res) => {
+  const {
+    title,
+    companyName,
+    location,
+    salaryRange,
+    jobType,
+    workType,
+    experienceLevel,
+    description,
+    requirements,
+    skills,
+    benefits,
+    contactEmail,
+    companyWebsite,
+    deadline
+  } = req.body;
+
+  const userId = req.user.id; // set in authenticate middleware
+
+  try {
+    const newJob = await prisma.job.create({
+      data: {
+        title,
+        companyName,
+        location,
+        salaryRange,
+        jobType,
+        workType,
+        experienceLevel,
+        description,
+        requirements,
+        skills,
+        benefits,
+        contactEmail,
+        companyWebsite,
+        deadline: deadline ? new Date(deadline) : null,
+        postedById: userId
+      }
+    });
+
+    res.status(201).json(newJob);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to create job posting" });
+  }
+};
+
