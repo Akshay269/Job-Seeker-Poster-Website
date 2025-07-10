@@ -7,9 +7,9 @@ const ContactInfoForm = () => {
     formState: { errors },
   } = useFormContext();
 
-
   return (
     <div className="space-y-6">
+      {/* Email & Phone */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="email" className="block font-medium">
@@ -18,7 +18,7 @@ const ContactInfoForm = () => {
           <input
             id="email"
             type="email"
-            {...register("email", {
+            {...register("contactInfo.email", {
               required: "Email is required",
               pattern: {
                 value: /^\S+@\S+\.\S+$/,
@@ -28,8 +28,10 @@ const ContactInfoForm = () => {
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="your.email@example.com"
           />
-          {errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+          {errors.contactInfo?.email && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.contactInfo.email.message}
+            </p>
           )}
         </div>
 
@@ -40,117 +42,120 @@ const ContactInfoForm = () => {
           <input
             id="phone"
             type="tel"
-            {...register("phone", {
+            {...register("contactInfo.phone", {
               required: "Phone number is required",
               minLength: { value: 10, message: "Minimum 10 digits" },
             })}
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="+1 (555) 123-4567"
           />
-          {errors.phone && (
-            <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
+          {errors.contactInfo?.phone && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.contactInfo.phone.message}
+            </p>
           )}
         </div>
       </div>
 
+      {/* Address */}
       <div>
         <label htmlFor="address" className="block font-medium">
-          Street Address
+          Street Address *
         </label>
         <input
           id="address"
-          {...register("address",{required:"Address is required"})}
+          {...register("contactInfo.address", { required: "Address is required" })}
           className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
           placeholder="123 Main Street, Apt 4B"
         />
-        {errors.address && (
-          <p className="text-sm text-red-500 mt-1">{errors.address.message}</p>
+        {errors.contactInfo?.address && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.contactInfo.address.message}
+          </p>
         )}
       </div>
 
+      {/* City, State, ZIP, Country */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label htmlFor="city" className="block font-medium">
-            City
+            City *
           </label>
           <input
             id="city"
-            {...register("city",{required:"City is required"})}
+            {...register("contactInfo.city", { required: "City is required" })}
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="New York"
           />
-          {errors.city && (
-          <p className="text-sm text-red-500 mt-1">{errors.city.message}</p>
-        )}
+          {errors.contactInfo?.city && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.contactInfo.city.message}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="state" className="block font-medium">
-            State
+            State *
           </label>
           <input
             id="state"
-            {...register("state",{required:"State is required"})}
+            {...register("contactInfo.state", { required: "State is required" })}
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="NY"
           />
-          {errors.state && (
-          <p className="text-sm text-red-500 mt-1">{errors.state.message}</p>
-        )}
+          {errors.contactInfo?.state && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.contactInfo.state.message}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="zipCode" className="block font-medium">
-            ZIP Code
+            ZIP Code *
           </label>
           <input
             id="zipCode"
-            {...register("zipCode",{required:"ZipCode is required"})}
+            {...register("contactInfo.zip", { required: "ZIP Code is required" })}
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="10001"
           />
-          {errors.zipCode && (
-          <p className="text-sm text-red-500 mt-1">{errors.zipCode.message}</p>
-        )}
+          {errors.contactInfo?.zip && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.contactInfo.zip.message}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="country" className="block font-medium">
-            Country
+            Country *
           </label>
-          <CountryAutocomplete />
+         <CountryAutocomplete fieldPath="contactInfo.country" />
         </div>
       </div>
 
+      {/* LinkedIn & Portfolio */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="linkedIn" className="block font-medium">
-            LinkedIn Profile
+            LinkedIn Profile (Optional)
           </label>
           <input
             id="linkedIn"
-            {...register("linkedIn")}
+            {...register("contactInfo.linkedIn")}
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="https://linkedin.com/in/yourprofile"
           />
-          {errors.linkedIn && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.linkedIn.message}
-            </p>
-          )}
         </div>
         <div>
           <label htmlFor="portfolio" className="block font-medium">
-            Portfolio/Website
+            Portfolio/Website (Optional)
           </label>
           <input
             id="portfolio"
-            {...register("portfolio")}
+            {...register("contactInfo.portfolio")}
             className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
             placeholder="https://yourportfolio.com"
           />
-          {errors.portfolio && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.portfolio.message}
-            </p>
-          )}
         </div>
       </div>
     </div>

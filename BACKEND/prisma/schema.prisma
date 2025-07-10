@@ -43,27 +43,63 @@ model Job {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   applications    Application[]
+  status        JobStatus      @default(ACTIVE)
 }
 
 model Application {
-  id            String     @id @default(uuid())
-  resume        String     // Can store URL or base64 string
-  job           Job        @relation(fields: [jobId], references: [id])
-  jobId         String
-  applicant     User       @relation("Applicant", fields: [applicantId], references: [id])
-  applicantId   String
+  id             String     @id @default(uuid())
+  appliedAt      DateTime   @default(now())
+  status         ApplicationStatus @default(PENDING_REVIEW)
 
-  // Multi-step form fields
-  fullName      String
-  email         String
-  phone         String
-  experience    Int?
-  lastCompany   String?
-  coverLetter   String?
-  appliedAt     DateTime   @default(now())
+  // Relations
+  jobId          String
+  job            Job        @relation(fields: [jobId], references: [id])
+  applicantId    String
+  applicant      User       @relation("Applicant", fields: [applicantId], references: [id])
+
+  // Personal Info
+  personalInfo   Json       // { fullName, dateOfBirth, gender, summary, country }
+
+  // Contact Info
+  contactInfo    Json       // { email, phone, address, city, state, zip, linkedIn, portfolio, country }
+
+  // Experience (array of jobs)
+  experiences    Json       // [ { jobTitle, company, startDate, endDate, isCurrent, description } ]
+
+  // Education
+  educations     Json       // [ { degree, fieldOfStudy, institution, graduationYear, gpa } ]
+
+  // Skills
+  skills         Json       // [ { name, level } ]
+
+  // Certifications
+  certifications Json?      // [ { name, issuer, year } ]
+
+  // Languages
+  languages      String[]   // simple string array
+
+  // Documents as URLs
+  resume         String     // required URL to resume
+  coverLetter    String?    // optional URL
+  portfolio      String?    // optional URL
+  otherFiles     String[]   // array of additional document URLs
 }
+
+
 
 enum Role {
   ADMIN
   APPLICANT
+}
+enum JobStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ApplicationStatus {
+  PENDING_REVIEW
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  REJECTED
+  HIRED
 }

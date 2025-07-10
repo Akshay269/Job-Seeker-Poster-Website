@@ -11,6 +11,7 @@ import EducationForm from "../components/apply/EducationForm";
 import SkillsForm from "../components/apply/SkillsForm";
 import DocumentsForm from "../components/apply/DocumentsForm";
 import ReviewForm from "../components/apply/ReviewForm";
+import useAuthStore from "../store/authStore";
 
 const ApplyPage = () => {
   const { jobId } = useParams();
@@ -18,15 +19,55 @@ const ApplyPage = () => {
   const [job, setJob] = useState(null);
   const [loadingJob, setLoadingJob] = useState(true);
   const totalSteps = 7;
+  const { user } = useAuthStore();
 
   const methods = useForm({
     defaultValues: {
-      personalInfo: {},
-      contactInfo: {},
-      experience: [{ jobTitle: "", company: "", startDate: "" }],
-      education: { educations: [] },
-      skills: { skills: [], certifications: [], languages: [] },
-      documents: { resume: null, coverLetter: null, portfolio: null, other: [] },
+      personalInfo: {
+        firstName: "",
+        lastName: "",
+        dateOfBirth: "",
+        gender: "",
+        summary: "",
+        nationality: "",
+      },
+      contactInfo: {
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+        linkedIn: "",
+        portfolio: "",
+        country: "",
+      },
+      experiences: [
+        {
+          jobTitle: "",
+          company: "",
+          startDate: "",
+          endDate: "",
+          isCurrent: false,
+          description: "",
+        },
+      ],
+      educations: [
+        {
+          degree: "",
+          fieldOfStudy: "",
+          institution: "",
+          graduationYear: "",
+          gpa: "",
+        },
+      ],
+      skills: [],
+      certifications: [],
+      languages: [],
+      resume: null,
+      coverLetter: null,
+      portfolio: null,
+      other: [],
     },
   });
 
@@ -36,6 +77,7 @@ const ApplyPage = () => {
     formState: { isSubmitting },
   } = methods;
 
+  //Fetching Job Details
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -76,8 +118,49 @@ const ApplyPage = () => {
     }
   };
 
-  const onSubmit = (data) => {
-    console.log("Final Form Submission", data);
+  const onSubmit = async (data) => {
+    console.log("initialData", data);
+    const payload = {
+      jobId,
+      applicantId: user?.id,
+
+      personalInfo: {
+        fullName: `${data.personalInfo.firstName} ${data.personalInfo.lastName}`,
+        dateOfBirth: data.personalInfo.dateOfBirth,
+        gender: data.personalInfo.gender,
+        summary: data.personalInfo.summary,
+        country: data.personalInfo.nationality,
+      },
+      contactInfo: {
+        email: data.contactInfo.email,
+        phone: data.contactInfo.phone,
+        address: data.contactInfo.address,
+        city: data.contactInfo.city,
+        state: data.contactInfo.state,
+        zip: data.contactInfo.zip,
+        linkedIn: data.contactInfo.linkedIn,
+        portfolio: data.contactInfo.portfolio,
+        country: data.contactInfo.country,
+      },
+      experiences: data.experiences || [],
+      educations: data.educations || [],
+      skills: data.skills || [],
+      certifications: data.certifications || [],
+      languages: data.languages?.map((l) => l.name) || [],
+      resume: data.resume,
+      coverLetter: data.coverLetter || "",
+      portfolio: data.portfolio || "",
+      otherFiles: data.other || [],
+    };
+    console.log("final sub", payload);
+
+    try {
+      const res = await API.post("/submit", payload);
+      console.log("✅ Application submitted:", res.data);
+    } catch (err) {
+      console.error("❌ Failed to submit application", err);
+      alert("Error submitting application.");
+    }
   };
 
   useEffect(() => {
@@ -135,7 +218,9 @@ const ApplyPage = () => {
                 Back to Jobs
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-black">Job Application</h1>
+                <h1 className="text-xl font-bold text-black">
+                  Job Application
+                </h1>
                 {loadingJob ? (
                   <p className="text-sm text-gray-500 flex items-center gap-2">
                     <Spinner className="w-4 h-4" /> Loading job...

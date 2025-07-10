@@ -69,9 +69,9 @@ const Navbar = () => {
                 <RouterLink to="/jobs" className="hover:text-gray-700">
                   Find Jobs
                 </RouterLink>
-                <RouterLink to="/companies" className="hover:text-gray-700">
+                {/* <RouterLink to="/companies" className="hover:text-gray-700">
                   Companies
-                </RouterLink>
+                </RouterLink> */}
                 <button
                   onClick={handlePostJobClick}
                   className="hover:text-gray-700"
@@ -86,19 +86,26 @@ const Navbar = () => {
 
             {isLoggedIn && (
               <>
-                {user?.role === "APPLICANT" && (
+                {user?.role === "APPLICANT" && (<>
                   <RouterLink to="/jobs" className="hover:text-gray-700">
                     Find Jobs
                   </RouterLink>
+                   <RouterLink to="/myapplications" className="hover:text-gray-700">
+                    My Applications
+                  </RouterLink>
+                  </>
                 )}
                 {user?.role === "ADMIN" && (
-                  <RouterLink to="/post-job" className="hover:text-gray-700">
-                    Post Jobs
-                  </RouterLink>
+                  <>
+                    <RouterLink to="/dashboard" className="hover:text-gray-700">
+                      Dashboard
+                    </RouterLink>
+                    <RouterLink to="/post-job" className="hover:text-gray-700">
+                      Post Jobs
+                    </RouterLink>
+                  </>
                 )}
-                <RouterLink to="/companies" className="hover:text-gray-700">
-                  Companies
-                </RouterLink>
+    
                 <RouterLink to="/about" className="hover:text-gray-700">
                   About
                 </RouterLink>

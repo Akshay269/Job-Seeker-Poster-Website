@@ -43,7 +43,7 @@ const Jobs = () => {
             {jobs.length === 0 && !loading ? (
               <p className="text-gray-500 col-span-full">No jobs found.</p>
             ) : (
-              jobs.map((job) => <JobCard key={job.id} job={job} />)
+              jobs.map((job) => <JobCard key={job.id} job={job} role={"APPLICANT"} />)
             )}
           </div>
         </main>

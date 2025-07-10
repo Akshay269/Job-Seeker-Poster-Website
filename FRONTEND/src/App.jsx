@@ -10,6 +10,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import ApplyPage from "./pages/ApplyPage";
 import PostJobs from "./pages/PostJobs";
+import About from "./pages/About";
+import JobApplicationsPage from "./pages/JobApplicationsPage";
+import MyApplicationsPage from "./pages/MyApplicationsPage";
 
 const App = () => {
   return (
@@ -23,19 +26,36 @@ const App = () => {
         <Route path="/signup" element={<Register />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/about" element={<About />} />
         <Route
           path="/apply/:jobId"
           element={
-            <ProtectedRoute role="APPLICANT">
+            <ProtectedRoute requireAuth={true} role="APPLICANT">
               <ApplyPage />
             </ProtectedRoute>
           }
         />
-          <Route
+         <Route
+          path="/myapplications"
+          element={
+            <ProtectedRoute requireAuth={true} role="APPLICANT">
+              <MyApplicationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/post-job"
           element={
             <ProtectedRoute requireAuth={true} role="ADMIN">
-              <PostJobs/>
+              <PostJobs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/applications/job/:jobId"
+          element={
+            <ProtectedRoute requireAuth={true} role="ADMIN">
+              <JobApplicationsPage />
             </ProtectedRoute>
           }
         />

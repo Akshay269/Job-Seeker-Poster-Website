@@ -1,100 +1,98 @@
-import { useState, useEffect } from "react";
+import { useFormContext, Controller } from "react-hook-form";
 import { Upload, File, X, Plus } from "lucide-react";
+import { useRef } from "react";
 
 const DocumentsForm = () => {
-  const [formData, setFormData] = useState({
-    resume: null,
-    coverLetter: null,
-    portfolio: null,
-    other: [],
-  });
+  const {
+    control,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext();
 
-  useEffect(() => {
-    // You can lift this data up via props if needed
-    // onUpdate(formData);
-  }, [formData]);
+  const other = watch("other") || [];
 
-  const handleFileUpload = (field, file) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: file,
-    }));
-  };
+  const otherFilesRef = useRef();
 
-  const handleMultipleFileUpload = (files) => {
-    if (files) {
-      const fileArray = Array.from(files);
-      setFormData((prev) => ({
-        ...prev,
-        other: [...(prev.other || []), ...fileArray],
-      }));
-    }
+  const handleOtherFilesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    setValue("other", [...other, ...files], { shouldValidate: true });
   };
 
   const removeOtherFile = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      other: prev.other.filter((_, i) => i !== index),
-    }));
+    const updated = [...other];
+    updated.splice(index, 1);
+    setValue("other", updated, { shouldValidate: true });
   };
 
-  const FileUploadBox = ({ label, field, accept, required = false }) => {
-    const file = formData[field];
+  const FileUploadBox = ({ label, field, required = false, accept }) => (
+    <Controller
+      name={field}
+      control={control}
+      rules={{
+        validate: (file) => {
+          if (required && !file) return `${label} is required`;
+          return true;
+        },
+      }}
+      render={({ field: { onChange, value } }) => (
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+          <div className="space-y-2">
+            <Upload className="w-8 h-8 mx-auto text-gray-400" />
+            <div>
+              <p className="text-lg font-medium">
+                {label} {required && <span className="text-red-500">*</span>}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                Upload your {label.toLowerCase()} (PDF, DOC, DOCX)
+              </p>
+            </div>
 
-    return (
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-        <div className="space-y-2">
-          <Upload className="w-8 h-8 mx-auto text-gray-400" />
-          <div>
-            <p className="text-lg font-medium">
-              {label} {required && <span className="text-red-500">*</span>}
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              Upload your {label.toLowerCase()} (PDF, DOC, DOCX)
-            </p>
+            {value ? (
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <File className="w-4 h-4" />
+                <span className="text-sm font-medium">{value.name}</span>
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-red-600"
+                  onClick={() => onChange(null)}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <input
+                  type="file"
+                  accept={accept}
+                  className="hidden"
+                  id={`file-${field}`}
+                  onChange={(e) => onChange(e.target.files?.[0] || null)}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    document.getElementById(`file-${field}`)?.click()
+                  }
+                  className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-100"
+                >
+                  Choose File
+                </button>
+              </div>
+            )}
+
+            {errors[field] && (
+              <p className="text-sm text-red-500">{errors[field].message}</p>
+            )}
           </div>
-
-          {file ? (
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <File className="w-4 h-4" />
-              <span className="text-sm font-medium">{file.name}</span>
-              <button
-                type="button"
-                className="text-gray-500 hover:text-red-600"
-                onClick={() => handleFileUpload(field, null)}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="mt-4">
-              <input
-                type="file"
-                accept={accept}
-                onChange={(e) =>
-                  handleFileUpload(field, e.target.files?.[0] || null)
-                }
-                className="hidden"
-                id={`file-${field}`}
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  document.getElementById(`file-${field}`)?.click()
-                }
-                className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-100"
-              >
-                Choose File
-              </button>
-            </div>
-          )}
         </div>
-      </div>
-    );
-  };
+      )}
+    />
+  );
 
   return (
     <div className="space-y-6">
+      {/* Resume and Cover Letter */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FileUploadBox
           label="Resume"
@@ -109,6 +107,7 @@ const DocumentsForm = () => {
         />
       </div>
 
+      {/* Portfolio */}
       <FileUploadBox
         label="Portfolio"
         field="portfolio"
@@ -132,15 +131,13 @@ const DocumentsForm = () => {
             type="file"
             multiple
             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            onChange={(e) => handleMultipleFileUpload(e.target.files)}
+            ref={otherFilesRef}
             className="hidden"
-            id="additional-files"
+            onChange={handleOtherFilesChange}
           />
           <button
             type="button"
-            onClick={() =>
-              document.getElementById("additional-files")?.click()
-            }
+            onClick={() => otherFilesRef.current?.click()}
             className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-100 flex items-center justify-center mx-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -148,10 +145,10 @@ const DocumentsForm = () => {
           </button>
         </div>
 
-        {formData.other && formData.other.length > 0 && (
+        {other?.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium">Uploaded Files:</p>
-            {formData.other.map((file, index) => (
+            {other.map((file, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between bg-gray-50 p-2 rounded"

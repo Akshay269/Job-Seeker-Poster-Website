@@ -4,13 +4,15 @@ const prisma = new PrismaClient();
 exports.getAllJobs = async (req, res) => {
   try {
     const jobs = await prisma.job.findMany({
-      include: {
-        postedBy: {
-          select: { companyName: true, email: true },
-        },
-        applications: true,
+      where: {
+        status: "ACTIVE",
       },
-      orderBy: { createdAt: "desc" },
+      include: {
+        postedBy: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     res.json(jobs);
@@ -19,29 +21,36 @@ exports.getAllJobs = async (req, res) => {
   }
 };
 
-exports.getJobById = async (req, res) => {
+exports.getJobDetails = async (req, res) => {
+  const { jobId } = req.params;
+
   try {
-    const jobId = req.params.jobId;
     const job = await prisma.job.findUnique({
-      where: { id: jobId },
+      where: {
+        id: jobId,
+      },
       include: {
         postedBy: {
-          select: { companyName: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            companyName: true,
+          },
         },
       },
     });
+
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    res.json(job);
+    res.status(200).json(job);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch job" });
+    console.error("Failed to fetch job details:", err);
+    res.status(500).json({ message: "Failed to fetch job details" });
   }
 };
-
-
-
 
 
 exports.postJob = async (req, res) => {
@@ -59,10 +68,10 @@ exports.postJob = async (req, res) => {
     benefits,
     contactEmail,
     companyWebsite,
-    deadline
+    deadline,
   } = req.body;
-  console.log("user",req.user);
-  const userId = req.user.userId; 
+  console.log("user", req.user);
+  const userId = req.user.userId;
 
   try {
     const newJob = await prisma.job.create({
@@ -81,8 +90,8 @@ exports.postJob = async (req, res) => {
         contactEmail,
         companyWebsite,
         deadline: deadline ? new Date(deadline) : null,
-        postedById: userId, 
-      }
+        postedById: userId,
+      },
     });
 
     res.status(201).json(newJob);
@@ -92,3 +101,31 @@ exports.postJob = async (req, res) => {
   }
 };
 
+exports.getPostedJobs = async (req, res) => {
+  try {
+    // console.log("postreq",req);
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    if (userRole !== "ADMIN") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    const jobs = await prisma.job.findMany({
+      where: {
+        postedById: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        applications: true,
+      },
+    });
+
+    res.status(200).json(jobs);
+  } catch (error) {
+    console.error("Error fetching admin jobs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
