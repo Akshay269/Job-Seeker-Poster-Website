@@ -22,7 +22,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Auto-set role 
   useEffect(() => {
     if (location.state?.role === "ADMIN") {
       setRole("ADMIN");

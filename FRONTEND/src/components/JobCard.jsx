@@ -50,7 +50,7 @@ const JobCard = ({ job, role }) => {
           {isAdmin && (
             <div className="flex flex-col items-end gap-1 mt-4">
               <Link
-                to={`/dashboard/job/${id}/applications`}
+                to={`/job/${id}/applications`}
                 className="flex items-center text-sm text-gray-600 hover:underline hover:text-black"
                 title="View Applicants"
               >

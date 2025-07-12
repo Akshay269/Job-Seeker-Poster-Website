@@ -52,7 +52,7 @@ const App = () => {
           }
         />
         <Route
-          path="/applications/job/:jobId"
+          path="/job/:jobId/applications"
           element={
             <ProtectedRoute requireAuth={true} role="ADMIN">
               <JobApplicationsPage />

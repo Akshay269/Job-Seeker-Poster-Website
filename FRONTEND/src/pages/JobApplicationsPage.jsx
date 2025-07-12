@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, Mail, Phone, MapPin, Calendar, User, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  User,
+  Search,
+} from "lucide-react";
 import API from "../api/axios";
 
 const getStatusColor = (status) => {
@@ -28,7 +37,7 @@ const ApplicationsView = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await API.get(`/applications/job/${jobId}`);
+        const res = await API.get(`/applications/${jobId}`);
         setApplications(res.data);
       } catch (error) {
         console.error("Failed to fetch applications", error);
@@ -40,9 +49,10 @@ const ApplicationsView = () => {
     fetchApplications();
   }, [jobId]);
 
-  const filteredApps = applications.filter((app) =>
-    app.applicant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredApps = applications.filter(
+    (app) =>
+      app.applicant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -94,8 +104,12 @@ const ApplicationsView = () => {
                         <User className="w-4 h-4 text-gray-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-black">{app.applicant?.name || "N/A"}</p>
-                        <p className="text-xs text-gray-500">{app.previousRole || "-"}</p>
+                        <p className="font-medium text-black">
+                          {app.applicant?.name || "N/A"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {app.previousRole || "-"}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -115,17 +129,26 @@ const ApplicationsView = () => {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <p>{app.experience || "-"}</p>
-                    <p className="text-xs text-gray-500">{app.education || "-"}</p>
+                    <p className="text-xs text-gray-500">
+                      {app.education || "-"}
+                    </p>
                     <div className="flex gap-1 flex-wrap mt-1">
-                      {(app.skills || []).slice(0, 3).map((skill) => (
-                        <span key={skill} className="px-2 py-0.5 text-xs bg-gray-100 rounded-md">
-                          {skill}
+                      {(app.skills || []).slice(0, 3).map((skill, idx) => (
+                        <span
+                          key={`${skill.name}-${idx}`}
+                          className="px-2 py-0.5 text-xs bg-gray-100 rounded-md"
+                        >
+                          {skill.name}
                         </span>
                       ))}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(app.status)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(
+                        app.status
+                      )}`}
+                    >
                       {app.status}
                     </span>
                   </td>
@@ -144,7 +167,10 @@ const ApplicationsView = () => {
               ))}
               {!loading && filteredApps.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     No applications found.
                   </td>
                 </tr>

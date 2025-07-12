@@ -12,13 +12,17 @@ import SkillsForm from "../components/apply/SkillsForm";
 import DocumentsForm from "../components/apply/DocumentsForm";
 import ReviewForm from "../components/apply/ReviewForm";
 import useAuthStore from "../store/authStore";
+import { toast } from "react-hot-toast";
 
 const ApplyPage = () => {
   const { jobId } = useParams();
   const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 7;
+
   const [job, setJob] = useState(null);
   const [loadingJob, setLoadingJob] = useState(true);
-  const totalSteps = 7;
+  const [submitting, setSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
 
   const methods = useForm({
@@ -77,7 +81,7 @@ const ApplyPage = () => {
     formState: { isSubmitting },
   } = methods;
 
-  //Fetching Job Details
+  // Fetch job details
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -89,7 +93,6 @@ const ApplyPage = () => {
         setLoadingJob(false);
       }
     };
-
     fetchJob();
   }, [jobId]);
 
@@ -119,11 +122,11 @@ const ApplyPage = () => {
   };
 
   const onSubmit = async (data) => {
-    console.log("initialData", data);
+    if (hasSubmitted) return;
+
     const payload = {
       jobId,
       applicantId: user?.id,
-
       personalInfo: {
         fullName: `${data.personalInfo.firstName} ${data.personalInfo.lastName}`,
         dateOfBirth: data.personalInfo.dateOfBirth,
@@ -147,19 +150,22 @@ const ApplyPage = () => {
       skills: data.skills || [],
       certifications: data.certifications || [],
       languages: data.languages?.map((l) => l.name) || [],
-      resume: data.resume,
-      coverLetter: data.coverLetter || "",
-      portfolio: data.portfolio || "",
-      otherFiles: data.other || [],
+      resume: data.resume?.url,
+      coverLetter: data.coverLetter?.url || "",
+      portfolio: data.portfolio?.url || "",
+      otherFiles: (data.other || []).map((file) => file.url),
     };
-    console.log("final sub", payload);
 
+    setSubmitting(true);
     try {
-      const res = await API.post("/submit", payload);
-      console.log("✅ Application submitted:", res.data);
+      const res = await API.post("applications/submit", payload);
+      toast.success("Application submitted successfully!",res);
+      setHasSubmitted(true);
     } catch (err) {
       console.error("❌ Failed to submit application", err);
-      alert("Error submitting application.");
+      toast.error("Error submitting application.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -198,8 +204,7 @@ const ApplyPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
-      {/* Full-Screen Spinner Overlay */}
-      {loadingJob && (
+      {(loadingJob || submitting) && (
         <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
           <Spinner className="w-8 h-8 text-black" />
         </div>
@@ -218,16 +223,10 @@ const ApplyPage = () => {
                 Back to Jobs
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-black">
-                  Job Application
-                </h1>
-                {loadingJob ? (
-                  <p className="text-sm text-gray-500 flex items-center gap-2">
-                    <Spinner className="w-4 h-4" /> Loading job...
-                  </p>
-                ) : (
+                <h1 className="text-xl font-bold text-black">Job Application</h1>
+                {job && (
                   <p className="text-sm text-gray-600">
-                    {job?.title} at {job?.postedBy?.companyName}
+                    {job.title} at {job?.postedBy?.companyName}
                   </p>
                 )}
               </div>
@@ -264,14 +263,15 @@ const ApplyPage = () => {
       {/* Form */}
       <FormProvider {...methods}>
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            e.preventDefault();
+          }}
           className="max-w-4xl mx-auto px-4 py-8"
         >
           <div className="bg-white rounded-lg shadow-sm border p-8">
             {renderStep()}
           </div>
 
-          {/* Navigation */}
           <div className="flex justify-between items-center mt-8">
             {currentStep > 1 && (
               <button
@@ -286,8 +286,9 @@ const ApplyPage = () => {
 
             {currentStep === totalSteps ? (
               <button
-                type="submit"
-                disabled={isSubmitting}
+                type="button"
+                onClick={handleSubmit(onSubmit)}
+                disabled={isSubmitting || hasSubmitted}
                 className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
               >
                 <Check className="w-4 h-4 inline mr-1" />

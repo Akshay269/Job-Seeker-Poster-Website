@@ -1,3 +1,8 @@
+
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 exports.getApplicationsbyId = async (req, res) => {
   const { jobId } = req.params;
 
@@ -22,7 +27,7 @@ exports.getApplicationsbyId = async (req, res) => {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        appliedAt: "desc",
       },
     });
 
@@ -30,5 +35,52 @@ exports.getApplicationsbyId = async (req, res) => {
   } catch (err) {
     console.error("Failed to get applications by job ID", err);
     res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+exports.submitApplication = async (req, res) => {
+  try {
+    const {
+      jobId,
+      applicantId,
+      personalInfo,
+      contactInfo,
+      experiences,
+      educations,
+      skills,
+      certifications,
+      languages,
+      resume,
+      coverLetter,
+      portfolio,
+      otherFiles,
+    } = req.body;
+
+    const newApplication = await prisma.application.create({
+      data: {
+        jobId,
+        applicantId,
+        personalInfo,
+        contactInfo,
+        experiences,
+        educations,
+        skills,
+        certifications,
+        languages,
+        resume,
+        coverLetter,
+        portfolio,
+        otherFiles,
+      },
+    });
+
+    res
+      .status(201)
+      .json({ message: "Application submitted", application: newApplication });
+  } catch (error) {
+    console.error("Error creating application:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to submit application", error: error.message });
   }
 };

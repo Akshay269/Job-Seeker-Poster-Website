@@ -82,7 +82,7 @@ model Application {
   resume         String     // required URL to resume
   coverLetter    String?    // optional URL
   portfolio      String?    // optional URL
-  otherFiles     String[]   // array of additional document URLs
+  otherFiles     String[]     @default([])// array of additional document URLs
 }
 
 

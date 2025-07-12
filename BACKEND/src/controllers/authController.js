@@ -6,7 +6,7 @@ const generateToken = require('../utils/generateToken');
 const prisma = new PrismaClient();
 
 exports.register = async (req, res) => {
-   const { name, companyName, email, password, role } = req.body;
+   const { firstName,lastName, companyName, email, password, role } = req.body;
 
   if (!email || !password || !role) {
      return res.status(400).json({ message: "Missing required fields" });
@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      name: role === "APPLICANT" ? name : null,
+      name: role === "APPLICANT" ? firstName+" "+lastName : null,
       companyName: role === "ADMIN" ? companyName : null,
     },
   });

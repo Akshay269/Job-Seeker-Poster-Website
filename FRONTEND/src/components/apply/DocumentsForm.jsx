@@ -1,6 +1,45 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { Upload, File, X, Plus } from "lucide-react";
 import { useRef } from "react";
+import API from "../../api/axios";
+
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
+const getUploadSignature = async () => {
+  const res = await API.get(`/cloudinary/signature`);
+  return await res.data;
+};
+
+const uploadToCloudinary = async (file) => {
+  console.log(file.type);
+  const { timestamp, signature, apiKey, folder } = await getUploadSignature();
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("api_key", apiKey);
+  formData.append("timestamp", timestamp);
+  formData.append("signature", signature);
+  formData.append("folder", folder);
+  formData.append("resource_type", "auto");
+
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!res.ok) throw new Error("Upload failed");
+
+  const data = await res.json();
+  return { url: data.secure_url, publicId: data.public_id };
+};
+
+const deleteFromCloudinary = async (publicId) => {
+  await API.post(`/cloudinary/delete`, { publicId });
+};
 
 const DocumentsForm = () => {
   const {
@@ -11,18 +50,33 @@ const DocumentsForm = () => {
   } = useFormContext();
 
   const other = watch("other") || [];
-
   const otherFilesRef = useRef();
 
-  const handleOtherFilesChange = (e) => {
+  const handleOtherFilesChange = async (e) => {
     const files = Array.from(e.target.files || []);
-    setValue("other", [...other, ...files], { shouldValidate: true });
+    const uploaded = await Promise.all(
+      files.map(async (file) => {
+        try {
+          return await uploadToCloudinary(file);
+        } catch (err) {
+          console.error("Upload failed", err);
+          return null;
+        }
+      })
+    );
+    setValue("other", [...other, ...uploaded.filter(Boolean)], { shouldValidate: true });
   };
 
-  const removeOtherFile = (index) => {
+  const removeOtherFile = async (index) => {
     const updated = [...other];
-    updated.splice(index, 1);
+    const fileToDelete = updated.splice(index, 1)[0];
     setValue("other", updated, { shouldValidate: true });
+
+    try {
+      await deleteFromCloudinary(fileToDelete.publicId);
+    } catch (err) {
+      console.error("Failed to delete file", err);
+    }
   };
 
   const FileUploadBox = ({ label, field, required = false, accept }) => (
@@ -30,8 +84,8 @@ const DocumentsForm = () => {
       name={field}
       control={control}
       rules={{
-        validate: (file) => {
-          if (required && !file) return `${label} is required`;
+        validate: (val) => {
+          if (required && !val) return `${label} is required`;
           return true;
         },
       }}
@@ -51,11 +105,18 @@ const DocumentsForm = () => {
             {value ? (
               <div className="flex items-center justify-center gap-2 mt-4">
                 <File className="w-4 h-4" />
-                <span className="text-sm font-medium">{value.name}</span>
+                <span className="text-sm font-medium">Uploaded</span>
                 <button
                   type="button"
                   className="text-gray-500 hover:text-red-600"
-                  onClick={() => onChange(null)}
+                  onClick={async () => {
+                    try {
+                      await deleteFromCloudinary(value.publicId);
+                      onChange(null);
+                    } catch (err) {
+                      console.error("Failed to delete", err);
+                    }
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -67,7 +128,17 @@ const DocumentsForm = () => {
                   accept={accept}
                   className="hidden"
                   id={`file-${field}`}
-                  onChange={(e) => onChange(e.target.files?.[0] || null)}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const uploaded = await uploadToCloudinary(file);
+                        onChange(uploaded);
+                      } catch (err) {
+                        console.error("Upload failed", err);
+                      }
+                    }
+                  }}
                 />
                 <button
                   type="button"
@@ -92,29 +163,13 @@ const DocumentsForm = () => {
 
   return (
     <div className="space-y-6">
-      {/* Resume and Cover Letter */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FileUploadBox
-          label="Resume"
-          field="resume"
-          accept=".pdf,.doc,.docx"
-          required
-        />
-        <FileUploadBox
-          label="Cover Letter"
-          field="coverLetter"
-          accept=".pdf,.doc,.docx"
-        />
+        <FileUploadBox label="Resume" field="resume" accept=".pdf,.doc,.docx" required />
+        <FileUploadBox label="Cover Letter" field="coverLetter" accept=".pdf,.doc,.docx" />
       </div>
 
-      {/* Portfolio */}
-      <FileUploadBox
-        label="Portfolio"
-        field="portfolio"
-        accept=".pdf,.doc,.docx,.zip"
-      />
+      <FileUploadBox label="Portfolio" field="portfolio" accept=".pdf,.doc,.docx,.zip" />
 
-      {/* Additional Documents */}
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
         <div className="text-center space-y-2 mb-4">
           <Upload className="w-8 h-8 mx-auto text-gray-400" />
@@ -155,7 +210,7 @@ const DocumentsForm = () => {
               >
                 <div className="flex items-center gap-2">
                   <File className="w-4 h-4" />
-                  <span className="text-sm">{file.name}</span>
+                  <span className="text-sm">{file.url.split("/").pop()}</span>
                 </div>
                 <button
                   type="button"
