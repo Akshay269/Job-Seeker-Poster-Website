@@ -21,6 +21,7 @@ const ApplyPage = () => {
 
   const [job, setJob] = useState(null);
   const [loadingJob, setLoadingJob] = useState(true);
+  const [loadingDraft, setLoadingDraft] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
@@ -78,10 +79,11 @@ const ApplyPage = () => {
   const {
     handleSubmit,
     trigger,
+    getValues,
     formState: { isSubmitting },
+    reset,
   } = methods;
 
-  // Fetch job details
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -95,6 +97,75 @@ const ApplyPage = () => {
     };
     fetchJob();
   }, [jobId]);
+
+  useEffect(() => {
+    const fetchDraft = async () => {
+      if (!user?.id || !jobId) return;
+
+      try {
+        const res = await API.get(`/drafts/${user.id}`);
+        const drafts = res.data;
+        const draft = drafts.find((d) => d.jobId === jobId);
+        if (draft?.data) {
+          console.log("draft data", draft.data);
+          const data = draft.data;
+          methods.reset({
+            personalInfo: {
+              firstName: data.personalInfo?.firstName || "",
+              lastName: data.personalInfo?.lastName || "",
+              dateOfBirth: data.personalInfo?.dateOfBirth || "",
+              gender: data.personalInfo?.gender || "",
+              summary: data.personalInfo?.summary || "",
+              nationality: data.personalInfo?.nationality || "",
+            },
+            contactInfo: {
+              email: data.contactInfo?.email || "",
+              phone: data.contactInfo?.phone || "",
+              address: data.contactInfo?.address || "",
+              city: data.contactInfo?.city || "",
+              state: data.contactInfo?.state || "",
+              zip: data.contactInfo?.zip || "",
+              linkedIn: data.contactInfo?.linkedIn || "",
+              portfolio: data.contactInfo?.portfolio || "",
+              country: data.contactInfo?.country || "",
+            },
+            experiences: data.experiences || [
+              {
+                jobTitle: "",
+                company: "",
+                startDate: "",
+                endDate: "",
+                isCurrent: false,
+                description: "",
+              },
+            ],
+            educations: data.educations || [
+              {
+                degree: "",
+                fieldOfStudy: "",
+                institution: "",
+                graduationYear: "",
+                gpa: "",
+              },
+            ],
+            skills: data.skills || [],
+            certifications: data.certifications || [],
+            languages: data.languages?.map((l) => ({ name: l })) || [],
+            resume: data.resume ? { url: data.resume } : null,
+            coverLetter: data.coverLetter ? { url: data.coverLetter } : null,
+            portfolio: data.portfolio ? { url: data.portfolio } : null,
+            other: (data.otherFiles || []).map((url) => ({ url })),
+          });
+          toast.success("Draft loaded SuccessFully");
+        }
+      } catch (err) {
+        console.error("Failed to fetch draft", err);
+      } finally {
+        setLoadingDraft(false);
+      }
+    };
+    fetchDraft();
+  }, [user?.id, jobId, reset]);
 
   const stepTitles = [
     "Personal Information",
@@ -118,6 +189,43 @@ const ApplyPage = () => {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
+    }
+  };
+
+  const buildDraftPayload = (data, step) => {
+    const draft = {
+      jobId,
+      userId: user?.id,
+      data: {},
+    };
+
+    if (step >= 1) draft.data.personalInfo = data.personalInfo;
+    if (step >= 2) draft.data.contactInfo = data.contactInfo;
+    if (step >= 3) draft.data.experiences = data.experiences;
+    if (step >= 4) draft.data.educations = data.educations;
+    if (step >= 5) {
+      draft.data.skills = data.skills;
+      draft.data.certifications = data.certifications;
+      draft.data.languages = data.languages?.map((l) => l.name);
+    }
+    if (step >= 6) {
+      draft.data.resume = data.resume?.url;
+      draft.data.coverLetter = data.coverLetter?.url || "";
+      draft.data.portfolio = data.portfolio?.url || "";
+      draft.data.otherFiles = (data.other || []).map((file) => file.url);
+    }
+
+    return draft;
+  };
+
+  const handleSaveDraft = async () => {
+    const currentData = getValues();
+    const draftPayload = buildDraftPayload(currentData, currentStep);
+    try {
+      await API.put(`/drafts/${user.id}/${jobId}`, draftPayload);
+      toast.success("Draft saved successfully");
+    } catch {
+      toast.error("Failed to save draft");
     }
   };
 
@@ -159,7 +267,7 @@ const ApplyPage = () => {
     setSubmitting(true);
     try {
       const res = await API.post("applications/submit", payload);
-      toast.success("Application submitted successfully!",res);
+      toast.success("Application submitted successfully!", res);
       setHasSubmitted(true);
     } catch (err) {
       console.error("❌ Failed to submit application", err);
@@ -204,13 +312,12 @@ const ApplyPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
-      {(loadingJob || submitting) && (
+      {(loadingJob || loadingDraft || submitting) && (
         <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
           <Spinner className="w-8 h-8 text-black" />
         </div>
       )}
 
-      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -223,7 +330,9 @@ const ApplyPage = () => {
                 Back to Jobs
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-black">Job Application</h1>
+                <h1 className="text-xl font-bold text-black">
+                  Job Application
+                </h1>
                 {job && (
                   <p className="text-sm text-gray-600">
                     {job.title} at {job?.postedBy?.companyName}
@@ -235,7 +344,6 @@ const ApplyPage = () => {
         </div>
       </div>
 
-      {/* Progress */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-4">
@@ -260,12 +368,9 @@ const ApplyPage = () => {
         </div>
       </div>
 
-      {/* Form */}
       <FormProvider {...methods}>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-          }}
+          onSubmit={(e) => e.preventDefault()}
           className="max-w-4xl mx-auto px-4 py-8"
         >
           <div className="bg-white rounded-lg shadow-sm border p-8">
@@ -284,26 +389,36 @@ const ApplyPage = () => {
               </button>
             )}
 
-            {currentStep === totalSteps ? (
+            <div className="flex gap-4">
               <button
                 type="button"
-                onClick={handleSubmit(onSubmit)}
-                disabled={isSubmitting || hasSubmitted}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+                onClick={handleSaveDraft}
+                className="px-4 py-2 bg-white border border-black text-black rounded-md hover:bg-gray-100 text-sm"
               >
-                <Check className="w-4 h-4 inline mr-1" />
-                Submit Application
+                Save as Draft
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={nextStep}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
-              >
-                Next <ArrowRight className="w-4 h-4 inline ml-1" />
-              </button>
-            )}
+
+              {currentStep === totalSteps ? (
+                <button
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={isSubmitting || hasSubmitted}
+                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+                >
+                  <Check className="w-4 h-4 inline mr-1" />
+                  Submit Application
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+                >
+                  Next <ArrowRight className="w-4 h-4 inline ml-1" />
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </FormProvider>

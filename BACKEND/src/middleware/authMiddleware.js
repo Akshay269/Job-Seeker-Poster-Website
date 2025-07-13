@@ -8,7 +8,7 @@ const requireAuth = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // contains userId and role
-    console.log("reqq",req.user);
+    // console.log("reqq",req.user);
     next();
   } catch {
     return res.status(403).json({ message: "Invalid token" });

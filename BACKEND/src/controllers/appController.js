@@ -1,6 +1,4 @@
-
-
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.getApplicationsbyId = async (req, res) => {
@@ -37,7 +35,37 @@ exports.getApplicationsbyId = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+exports.getApplicationsByUser = async (req, res) => {
+  const { userId } = req.params;
 
+  try {
+    const applications = await prisma.application.findMany({
+      where: {
+        applicantId: userId,
+      },
+        select: {
+        id: true,
+        status: true,
+        appliedAt: true,
+        job: {
+          select: {
+            id: true,
+            title: true,
+            companyName: true,
+            location: true,
+            salaryRange: true,
+            jobType: true,
+          },
+        },
+      },
+    });
+
+    return res.json(applications);
+  } catch (error) {
+    console.error("Error fetching user applications:", error);
+    return res.status(500).json({ error: "Failed to fetch user applications" });
+  }
+};
 exports.submitApplication = async (req, res) => {
   try {
     const {

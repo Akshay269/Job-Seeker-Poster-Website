@@ -12,8 +12,15 @@ const CountryAutocomplete = ({ fieldPath = "country" }) => {
     formState: { errors },
   } = useFormContext();
 
-  const selectedCountry = watch(fieldPath) || "";
-  const [query, setQuery] = useState(selectedCountry);
+  const [query, setQuery] = useState("");
+  const watchedValue = watch(fieldPath);
+
+  useEffect(() => {
+    if (watchedValue && watchedValue !== query) {
+      setQuery(watchedValue);
+    }
+  }, [watchedValue]);
+  
   const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -40,9 +47,13 @@ const CountryAutocomplete = ({ fieldPath = "country" }) => {
           return;
         }
 
-        const res = await fetch("https://restcountries.com/v3.1/all?fields=name");
+        const res = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name"
+        );
         const data = await res.json();
-        const names = data.map((c) => c.name.common).sort((a, b) => a.localeCompare(b));
+        const names = data
+          .map((c) => c.name.common)
+          .sort((a, b) => a.localeCompare(b));
         setCountries(names);
         localStorage.setItem("countryList", JSON.stringify(names));
         setLoading(false);
@@ -119,7 +130,8 @@ const CountryAutocomplete = ({ fieldPath = "country" }) => {
             </li>
           )}
 
-          {!searching && query.length < 2 &&
+          {!searching &&
+            query.length < 2 &&
             popularCountries.map((country) => (
               <li
                 key={country}
@@ -130,7 +142,8 @@ const CountryAutocomplete = ({ fieldPath = "country" }) => {
               </li>
             ))}
 
-          {!searching && query.length >= 2 &&
+          {!searching &&
+            query.length >= 2 &&
             filteredCountries.map((country) => (
               <li
                 key={country}
@@ -141,9 +154,11 @@ const CountryAutocomplete = ({ fieldPath = "country" }) => {
               </li>
             ))}
 
-          {!searching && query.length >= 2 && filteredCountries.length === 0 && (
-            <li className="px-4 py-2 text-gray-500">No match found</li>
-          )}
+          {!searching &&
+            query.length >= 2 &&
+            filteredCountries.length === 0 && (
+              <li className="px-4 py-2 text-gray-500">No match found</li>
+            )}
         </ul>
       )}
     </div>
