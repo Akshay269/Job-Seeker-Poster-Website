@@ -1,8 +1,14 @@
-
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
-import { User, Building2, Menu, X, LogIn, UserPlus, Briefcase, Users, Info, FileText } from "lucide-react";
+import {
+  LogIn,
+  UserPlus,
+  Briefcase,
+  Users,
+  Info,
+  FileText,
+} from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserTie } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "./Spinner";
@@ -20,11 +26,11 @@ const Navbar = () => {
     try {
       logout();
       toast.success("Logged out successfully");
-      setTimeout(() => navigate("/"), 1000);
+      setTimeout(() => navigate("/"), 500);
     } catch {
       toast.error("Logout failed");
     } finally {
-      setTimeout(() => setLoading(false), 800);
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -34,7 +40,11 @@ const Navbar = () => {
   ];
 
   if (isLoggedIn && user?.role === "APPLICANT") {
-    navItems.push({ name: "My Applications", href: "/myapplications", icon: FileText });
+    navItems.push({
+      name: "My Applications",
+      href: "/myapplications",
+      icon: FileText,
+    });
   }
 
   if (isLoggedIn && user?.role === "ADMIN") {
@@ -63,7 +73,9 @@ const Navbar = () => {
                 <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
                   Anvaya
                 </span>
-                <span className="text-xs text-gray-500 -mt-1">Sacred Careers 🌸</span>
+                <span className="text-xs text-gray-500 -mt-1">
+                  Sacred Careers 🌸
+                </span>
               </div>
             </RouterLink>
 
@@ -98,21 +110,23 @@ const Navbar = () => {
                   </RouterLink>
                 </>
               ) : (
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <FontAwesomeIcon icon={faUserTie} className="text-purple-600" />
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2 text-base font-semibold text-black">
+                    <FontAwesomeIcon
+                      icon={faUserTie}
+                      className="text-purple-600"
+                    />
                     <span>{user?.name || user?.email}</span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="text-sm px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="text-sm px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg shadow-md hover:from-red-600 hover:to-pink-700 transition-all cursor-pointer"
                   >
                     Logout
                   </button>
                 </div>
               )}
             </div>
-        
           </div>
 
           {/* Mobile Dropdown */}

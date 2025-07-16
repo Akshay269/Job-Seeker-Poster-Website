@@ -13,8 +13,15 @@ import PostJobs from "./pages/PostJobs";
 import About from "./pages/About";
 import JobApplicationsPage from "./pages/JobApplicationsPage";
 import MyApplicationsPage from "./pages/MyApplicationsPage";
+import VerifyPage from "./pages/VerifyPage";
+import {useEffect} from "react";
+import useAuthStore from "./store/authStore"
+
 
 const App = () => {
+  useEffect(() => {
+  useAuthStore.getState().initializeAuth();
+}, []);
   return (
     <div className="font-sans">
       <Toaster position="top-center" reverseOrder={false} />
@@ -24,6 +31,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/signin" element={<Login />} />
         <Route path="/signup" element={<Register />} />
+        <Route path="/verify" element={<VerifyPage />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/about" element={<About />} />

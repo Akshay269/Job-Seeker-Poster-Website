@@ -103,8 +103,8 @@ exports.postJob = async (req, res) => {
 
 exports.getPostedJobs = async (req, res) => {
   try {
-    // console.log("postreq",req);
-    const userId = req.user.id;
+    console.log("postreq",req.user);
+    const userId = req.user.userId;
     const userRole = req.user.role;
 
     if (userRole !== "ADMIN") {
@@ -122,6 +122,7 @@ exports.getPostedJobs = async (req, res) => {
         applications: true,
       },
     });
+    console.log(jobs);
 
     res.status(200).json(jobs);
   } catch (error) {

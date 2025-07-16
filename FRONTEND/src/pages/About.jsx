@@ -53,136 +53,103 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-purple-50">
       {/* Hero Section */}
-      <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl font-bold text-black mb-6">
-              Connecting Talent with Opportunity
-            </h1>
-            <p className="text-xl text-gray-600 leading-relaxed mb-8">
-              Anvaya was founded with a simple mission: to make job searching and hiring more efficient,
-              transparent, and human. We believe that everyone deserves to find work they love and companies
-              deserve to find the right talent.
-            </p>
-            <div className="flex justify-center space-x-4">
-              <Link to="/register" className="bg-black text-white px-8 py-3 rounded hover:bg-gray-800 transition">
-                Join Our Mission
-              </Link>
-              <Link to="/about" className="border border-gray-400 text-gray-800 px-8 py-3 rounded hover:bg-gray-100 transition">
-                Learn More
-              </Link>
-            </div>
-          </div>
+      <div className="py-20 text-center">
+        <h1 className="text-5xl font-bold text-purple-700 mb-6">Connecting Sacred Talent with Divine Opportunity</h1>
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          Anvaya is on a sacred mission to align seekers with their destiny and builders with their divine vision.
+        </p>
+        <div className="mt-8 flex justify-center gap-4">
+          <Link
+            to="/register"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-medium shadow-lg hover:opacity-90"
+          >
+            🌸 Begin Sacred Journey
+          </Link>
+          <Link
+            to="/about"
+            className="border border-purple-400 text-purple-700 px-6 py-3 rounded-full font-medium hover:bg-purple-50"
+          >
+            ✨ Learn More
+          </Link>
         </div>
       </div>
 
       {/* Stats Section */}
-      <div className="bg-black text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <h3 className="text-4xl font-bold mb-2">1M+</h3>
-              <p className="text-gray-300">Job Seekers</p>
-            </div>
-            <div>
-              <h3 className="text-4xl font-bold mb-2">50K+</h3>
-              <p className="text-gray-300">Companies</p>
-            </div>
-            <div>
-              <h3 className="text-4xl font-bold mb-2">500K+</h3>
-              <p className="text-gray-300">Successful Hires</p>
-            </div>
-            <div>
-              <h3 className="text-4xl font-bold mb-2">95%</h3>
-              <p className="text-gray-300">Satisfaction Rate</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 bg-white text-center py-16">
+        <div className="bg-white text-purple-700 py-12">
+          <h2 className="text-4xl font-extrabold">10K+</h2>
+          <p className="text-lg">Sacred Opportunities</p>
+        </div>
+        <div className="bg-black text-orange-400 py-12">
+          <h2 className="text-4xl font-extrabold">50K+</h2>
+          <p className="text-lg">Gifted Souls Recruited</p>
         </div>
       </div>
 
       {/* Our Story Section */}
-      <div className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-black mb-6">Our Story</h2>
-              <div className="space-y-4 text-gray-600">
-                <p>
-                  Founded in 2020, Anvaya emerged from the frustration of both job seekers and recruiters
-                  with existing platforms. Our founders experienced firsthand the challenges of finding the
-                  right fit – whether as candidates or hiring managers.
-                </p>
-                <p>
-                  We set out to build something different. A platform that prioritizes quality over quantity,
-                  meaningful connections over endless applications, and transparency over black-box algorithms.
-                </p>
-                <p>
-                  Today, we're proud to serve over a million job seekers and 50,000 companies worldwide,
-                  facilitating hundreds of thousands of successful career moves.
-                </p>
-              </div>
-            </div>
-            <div className="bg-gray-100 rounded-2xl p-8 text-center">
-              <Award className="w-16 h-16 text-black mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-black mb-4">Award Winning Platform</h3>
-              <p className="text-gray-600">
-                Recognized as the "Best Job Platform" by TechCrunch and featured in Forbes'
-                "Top 10 Startups to Watch" list.
-              </p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-20 px-8">
+        <div className="bg-white rounded-xl p-8 shadow-md">
+          <h2 className="text-3xl font-bold text-purple-700 mb-4">Our Sacred Origin</h2>
+          <p className="text-gray-700 mb-4">
+            Born from purpose in 2020, Anvaya was crafted to transcend conventional job portals.
+            Our mission is to realign work with purpose and fulfillment.
+          </p>
+          <p className="text-gray-700">
+            From seekers finding their soul-callings to builders manifesting visions, Anvaya brings clarity,
+            connection, and cosmic impact.
+          </p>
+        </div>
+        <div className="bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-xl p-8 shadow-lg text-center">
+          <Award className="w-12 h-12 mx-auto mb-4" />
+          <h3 className="text-2xl font-semibold mb-2">Divinely Recognized</h3>
+          <p>
+            Honored as "Best Spiritual Job Platform" by CosmicTech Awards and praised by souls worldwide.
+          </p>
         </div>
       </div>
 
       {/* Values Section */}
-      <div className="bg-gray-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-black mb-4">Our Values</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              These core values guide everything we do and shape how we build our platform.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <div key={index} className="bg-white p-8 rounded-xl text-center hover:shadow-lg transition-shadow">
-                <value.icon className="w-12 h-12 text-black mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-black mb-4">{value.title}</h3>
-                <p className="text-gray-600">{value.description}</p>
-              </div>
-            ))}
-          </div>
+      <div className="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-purple-700 mb-2">Our Sacred Values</h2>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            These divine principles shape the essence of Anvaya's existence.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-8">
+          {values.map((value, idx) => (
+            <div key={idx} className="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-xl transition">
+              <value.icon className="w-10 h-10 text-purple-500 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-purple-800 mb-2">{value.title}</h3>
+              <p className="text-gray-600 text-sm">{value.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Team Section */}
-      <div className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-black mb-4">Meet Our Team</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              The passionate people behind Anvaya who are dedicated to transforming how the world works.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="text-center">
-                <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="w-16 h-16 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-bold text-black mb-2">{member.name}</h3>
-                <p className="text-black font-medium mb-2">{member.role}</p>
-                <p className="text-gray-600 text-sm">{member.description}</p>
+      <div className="py-20 bg-white">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-purple-700 mb-2">Our Divine Builders</h2>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            Meet the enlightened souls manifesting this vision.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-8">
+          {teamMembers.map((member, idx) => (
+            <div key={idx} className="bg-gradient-to-br from-white to-purple-50 rounded-xl p-6 text-center shadow-md hover:shadow-xl">
+              <div className="w-24 h-24 rounded-full bg-purple-100 mx-auto mb-4 flex items-center justify-center">
+                <Users className="w-10 h-10 text-purple-500" />
               </div>
-            ))}
-          </div>
+              <h3 className="text-lg font-bold text-purple-800">{member.name}</h3>
+              <p className="text-sm text-purple-600 mb-2">{member.role}</p>
+              <p className="text-sm text-gray-600">{member.description}</p>
+            </div>
+          ))}
         </div>
       </div>
-
     </div>
   );
 };

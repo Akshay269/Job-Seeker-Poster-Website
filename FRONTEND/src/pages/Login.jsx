@@ -5,7 +5,9 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import { toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
+import seekerImage from "../assets/jobseeker.jpg";
+import employerImage from "../assets/employer.jpg";
 
 const Login = () => {
   const {
@@ -34,6 +36,17 @@ const Login = () => {
       const res = await API.post("/auth/login", { ...data, role });
       const { user, token } = res.data;
 
+      if (!user.isVerified) {
+        toast("Please verify your account to continue", { icon: "🔒" });
+        navigate("/verify", {
+          state: {
+            email: user.email,
+            role: user.role,
+          },
+        });
+        return;
+      }
+
       setAuth(user, token);
       toast.success(`Welcome back, ${user.name || user.email}`);
 
@@ -48,146 +61,173 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 pt-10 pb-10 relative">
-      {/* Spinner Overlay */}
-      {loading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Spinner isLoading className="w-10 h-10 text-black" />
-        </div>
-      )}
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden">
+      {/* Left Image Panel */}
+      <div className="hidden md:block md:w-1/2 h-full relative transition-all duration-500">
+        <img
+          src={role === "APPLICANT" ? seekerImage : employerImage}
+          alt="Login Visual"
+          className="w-full h-full object-cover transition-opacity duration-500"
+        />
+      </div>
 
-      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl relative z-10">
-        <Link
-          to="/"
-          className="text-gray-500 text-sm mb-6 inline-block hover:underline"
-        >
-          ← Back to Home
-        </Link>
-
-        <div className="flex justify-center mb-4">
-          <div className="w-12 h-12 bg-black text-white rounded-lg flex items-center justify-center text-lg font-bold">
-            JP
-          </div>
-        </div>
-
-        <h2 className="text-2xl font-bold text-center text-black mb-1">
-          Welcome Back
-        </h2>
-        <p className="text-center text-gray-600 mb-6">
-          Sign in to your JobPortal account
-        </p>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Role Toggle */}
-          <div className="flex justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => setRole("APPLICANT")}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm border ${
-                role === "APPLICANT"
-                  ? "bg-black text-white"
-                  : "bg-white text-black border-gray-300"
-              }`}
-            >
-              Job Seeker
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("ADMIN")}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm border ${
-                role === "ADMIN"
-                  ? "bg-black text-white"
-                  : "bg-white text-black border-gray-300"
-              }`}
-            >
-              Employer
-            </button>
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {role === "APPLICANT" ? "Email Address" : "Company Email Address"}
-            </label>
-            <input
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Invalid email format",
-                },
-              })}
-              placeholder="Enter your email"
-              className={input}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                {...register("password", {
-                  required: "Password is required",
-                })}
-                placeholder="Enter your password"
-                className={`${input} pr-10`}
-              />
-              <div
-                className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
+      {/* Right Login Panel */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-gray-50 overflow-y-auto">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <Link
+                to="/"
+                className="inline-flex items-center text-gray-600 hover:text-black mb-6 transition-colors"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Link>
+
+              <h1 className="text-2xl font-bold text-black mb-2">
+                Welcome Back
+              </h1>
+              <p className="text-gray-600">Sign in to your Anvaya account</p>
+            </div>
+
+            <div className="mb-6">
+              <label className="text-black mb-3 block font-medium">
+                I am a:
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("APPLICANT")}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
+                    role === "APPLICANT"
+                      ? "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                      : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                  }`}
+                >
+                  <Briefcase className="w-4 h-4" />
+                  <span className="text-sm font-medium">Job Seeker</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("ADMIN")}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
+                    role === "ADMIN"
+                      ? "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                      : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm font-medium">Employer</span>
+                </button>
               </div>
             </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div>
+                <label className="text-black block text-sm font-medium mb-1">
+                  {role === "APPLICANT" ? "Email Address" : "Company Email"}
+                </label>
+                <input
+                  type="email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Invalid email format",
+                    },
+                  })}
+                  className={input}
+                  placeholder="Enter your email"
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-black block text-sm font-medium mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", {
+                      required: "Password is required",
+                    })}
+                    className={`${input} pr-10`}
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-600">
+                    Remember me
+                  </span>
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200"
+              >
+                {loading ? (
+                  <Spinner className="text-white w-4 h-4" />
+                ) : (
+                  "Sign In"
+                )}
+              </button>
+
+              <div className="text-center">
+                <p className="text-gray-600">
+                  Don't have an account?{" "}
+                  <Link
+                    to="/signup"
+                    className="text-purple-600 font-medium hover:text-purple-700 hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
-
-          {/* Remember + Forgot */}
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" className="h-4 w-4" />
-              Remember me
-            </label>
-            <Link to="/forgot-password" className="text-gray-600 hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-11 bg-black text-white rounded-lg text-lg font-semibold hover:bg-gray-900 transition"
-          >
-            {loading ? <Spinner className="text-white w-4 h-4" /> : "Sign In"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Don't have an account?{" "}
-          <Link to="/signup" className="font-semibold text-black hover:underline">
-            Sign up
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
 };
 
 const input =
-  "w-full border border-gray-300 rounded-md px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-black";
+  "w-full border border-gray-300 rounded-md px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500";
 
 export default Login;
