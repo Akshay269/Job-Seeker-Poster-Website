@@ -15,6 +15,7 @@ const JobCard = ({ job, role, draft }) => {
     tags = [],
     applications = [],
   } = job;
+
   const isApplicant = role === "APPLICANT";
   const isAdmin = role === "ADMIN";
 
@@ -28,8 +29,26 @@ const JobCard = ({ job, role, draft }) => {
     let filledSections = 0;
     const data = draft.data;
 
-    if (data.personalInfo?.firstName && data.personalInfo?.lastName && data.personalInfo?.dateOfBirth && data.personalInfo?.gender && data.personalInfo?.summary && data.personalInfo?.nationality && data.personalInfo.nationality) filledSections++;
-    if (data.contactInfo?.email && data.contactInfo?.phone && data.contactInfo.address && data.contactInfo.city && data.contactInfo.state && data.contactInfo.zip && data.contactInfo.linkedIn && data.contactInfo.country) filledSections++;
+    if (
+      data.personalInfo?.firstName &&
+      data.personalInfo?.lastName &&
+      data.personalInfo?.dateOfBirth &&
+      data.personalInfo?.gender &&
+      data.personalInfo?.summary &&
+      data.personalInfo?.nationality
+    )
+      filledSections++;
+    if (
+      data.contactInfo?.email &&
+      data.contactInfo?.phone &&
+      data.contactInfo.address &&
+      data.contactInfo.city &&
+      data.contactInfo.state &&
+      data.contactInfo.zip &&
+      data.contactInfo.linkedIn &&
+      data.contactInfo.country
+    )
+      filledSections++;
     if ((data.experiences || []).length > 0) filledSections++;
     if ((data.educations || []).length > 0) filledSections++;
     if ((data.skills || []).length > 0) filledSections++;
@@ -42,46 +61,45 @@ const JobCard = ({ job, role, draft }) => {
   const progress = calculateProgress();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-black transition-all duration-300 cursor-pointer group">
+    <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+      {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow">
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-black group-hover:text-gray-700 transition-colors">
+            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
               {title}
             </h3>
-            <p className="text-gray-600">{companyName}</p>
+            <p className="text-gray-600 text-sm">{companyName}</p>
           </div>
         </div>
 
-        <div className="mt-4">
+        <div>
           {isApplicant && (
             <Link
               to={`/apply/${id}`}
-              className="text-sm px-4 py-1.5 rounded-md hover:bg-gray-100 border border-gray-300 text-black"
+              className="inline-block px-4 py-1.5 text-sm font-medium border border-gray-300 text-black rounded-lg hover:bg-purple-100 transition"
             >
               {draft ? "Continue" : "Apply"}
             </Link>
           )}
-
           {isAdmin && (
-            <div className="flex flex-col items-end gap-1 mt-4">
-              <Link
-                to={`/job/${id}/applications`}
-                className="flex items-center text-sm text-gray-600 hover:underline hover:text-black"
-                title="View Applicants"
-              >
-                <Users className="w-4 h-4 mr-1 cursor-pointer" />
-                {applications.length} applicant
-                {applications.length !== 1 && "s"}
-              </Link>
-            </div>
+            <Link
+              to={`/job/${id}/applications`}
+              className="flex items-center text-sm text-gray-600 hover:text-purple-700 transition"
+              title="View Applicants"
+            >
+              <Users className="w-4 h-4 mr-1" />
+              {applications.length} applicant
+              {applications.length !== 1 && "s"}
+            </Link>
           )}
         </div>
       </div>
 
+      {/* Info Tags */}
       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
         <div className="flex items-center space-x-1">
           <MapPin className="w-4 h-4" />
@@ -97,26 +115,29 @@ const JobCard = ({ job, role, draft }) => {
         </div>
       </div>
 
+      {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {tags.map((tag, index) => (
+        {tags.map((tag, idx) => (
           <span
-            key={index}
-            className="inline-block px-2 py-1 text-xs bg-gray-100 text-black rounded hover:bg-gray-200"
+            key={idx}
+            className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700 font-medium"
           >
             {tag}
           </span>
         ))}
       </div>
 
+      {/* Draft Progress */}
       {draft && (
-        <div className="w-full bg-gray-200 h-2 rounded mb-2">
+        <div className="w-full bg-gray-200 h-2 rounded-full mb-2">
           <div
-            className="bg-black h-2 rounded"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
+      {/* Footer */}
       <div className="text-xs text-gray-500">Posted: {postedTime}</div>
     </div>
   );

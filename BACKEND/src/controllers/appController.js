@@ -1,4 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient ,ApplicationStatus} = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.getApplicationsbyId = async (req, res) => {
@@ -43,7 +43,7 @@ exports.getApplicationsByUser = async (req, res) => {
       where: {
         applicantId: userId,
       },
-        select: {
+      select: {
         id: true,
         status: true,
         appliedAt: true,
@@ -66,6 +66,36 @@ exports.getApplicationsByUser = async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch user applications" });
   }
 };
+exports.updateApplicationStatus = async (req, res) => {
+  const { applicationId } = req.params;
+  const { status } = req.body;
+
+  const allowedStatuses = {
+    "Pending Review": ApplicationStatus.PENDING_REVIEW,
+    "Shortlisted": ApplicationStatus.SHORTLISTED,
+    "Interview Scheduled": ApplicationStatus.INTERVIEW_SCHEDULED,
+    "Rejected": ApplicationStatus.REJECTED,
+  };
+
+  const prismaStatus = allowedStatuses[status];
+
+  if (!prismaStatus) {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+
+  try {
+    const updated = await prisma.application.update({
+      where: { id: applicationId },
+      data: { status: prismaStatus },
+    });
+
+    return res.json(updated);
+  } catch (err) {
+    console.error("Error updating status:", err);
+    return res.status(500).json({ error: "Failed to update status" });
+  }
+};
+
 exports.submitApplication = async (req, res) => {
   try {
     const {

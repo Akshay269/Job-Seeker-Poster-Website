@@ -1,15 +1,17 @@
+
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
-import { User, Building2 } from "lucide-react";
-import Anvaya2 from "../assets/Anvaya2.png";
+import { User, Building2, Menu, X, LogIn, UserPlus, Briefcase, Users, Info, FileText } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserTie } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "./Spinner";
+import Anvaya2 from "../assets/Anvaya2.png";
 import { useState } from "react";
 
 const Navbar = () => {
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -26,132 +28,135 @@ const Navbar = () => {
     }
   };
 
-  const handlePostJobClick = async () => {
-    setLoading(true);
-    try {
-      if (!isLoggedIn) {
-        toast.error("Please login as Job-poster to post jobs first");
-        setTimeout(
-          () => navigate("/signin", { state: { role: "ADMIN" } }),
-          500
-        );
-      } else if (user?.role === "ADMIN") {
-        navigate("/post-job");
-      }
-    } finally {
-      setTimeout(() => setLoading(false), 800);
-    }
-  };
+  const navItems = [
+    { name: "Jobs", href: "/jobs", icon: Briefcase },
+    { name: "About", href: "/about", icon: Info },
+  ];
+
+  if (isLoggedIn && user?.role === "APPLICANT") {
+    navItems.push({ name: "My Applications", href: "/myapplications", icon: FileText });
+  }
+
+  if (isLoggedIn && user?.role === "ADMIN") {
+    navItems.unshift({ name: "Dashboard", href: "/dashboard", icon: Users });
+  }
 
   return (
     <>
       {loading && <Spinner isLoading />}
 
-      <nav className="bg-white text-black border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="max-w-9xl mx-auto flex items-center justify-between">
-          {/* Left: Logo */}
-          <div className="pl-10">
-            <RouterLink to="/" className="flex items-center gap-2">
-              <div className="h-23 w-auto flex items-center">
+      <nav className="relative bg-white/80 backdrop-blur-lg border-b border-gray-200 top-0 z-50">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-orange-100/20"></div>
+
+        <div className="max-w-10xl mx-auto px-4 sm:px-7 lg:px-9 relative">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <RouterLink to="/" className="flex items-center gap-3">
+              <div className="relative">
                 <img
                   src={Anvaya2}
                   alt="Anvaya Logo"
-                  className="h-23 w-30 object-cover"
+                  className="w-20 h-20 object-cover drop-shadow-xl"
                 />
               </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
+                  Anvaya
+                </span>
+                <span className="text-xs text-gray-500 -mt-1">Sacred Careers 🌸</span>
+              </div>
             </RouterLink>
-          </div>
 
-          {/* Center Nav Links */}
-          <div className="hidden md:flex gap-8 text-lg font-medium">
-            {!isLoggedIn && (
-              <>
-                <RouterLink to="/jobs" className="hover:text-gray-700">
-                  Find Jobs
-                </RouterLink>
-                {/* <RouterLink to="/companies" className="hover:text-gray-700">
-                  Companies
-                </RouterLink> */}
-                <button
-                  onClick={handlePostJobClick}
-                  className="hover:text-gray-700"
-                >
-                  Post Jobs
-                </button>
-                <RouterLink to="/about" className="hover:text-gray-700">
-                  About
-                </RouterLink>
-              </>
-            )}
-
-            {isLoggedIn && (
-              <>
-                {user?.role === "APPLICANT" && (<>
-                  <RouterLink to="/jobs" className="hover:text-gray-700">
-                    Find Jobs
-                  </RouterLink>
-                   <RouterLink to="/myapplications" className="hover:text-gray-700">
-                    My Applications
-                  </RouterLink>
-                  </>
-                )}
-                {user?.role === "ADMIN" && (
-                  <>
-                    <RouterLink to="/dashboard" className="hover:text-gray-700">
-                      Dashboard
-                    </RouterLink>
-                    <RouterLink to="/post-job" className="hover:text-gray-700">
-                      Post Jobs
-                    </RouterLink>
-                  </>
-                )}
-    
-                <RouterLink to="/about" className="hover:text-gray-700">
-                  About
-                </RouterLink>
-              </>
-            )}
-          </div>
-
-          {/* Right: Auth Links */}
-          <div className="flex items-center gap-4 pr-10">
-            {!isLoggedIn ? (
-              <>
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-6">
+              {navItems.map((item) => (
                 <RouterLink
-                  to="/signin"
-                  className="flex items-center gap-1 text-lg text-black hover:text-gray-700"
+                  key={item.name}
+                  to={item.href}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-purple-100/40 transition"
                 >
-                  <User className="w-4 h-4" />
-                  <span>Login</span>
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.name}</span>
                 </RouterLink>
-                <RouterLink
-                  to="/signup"
-                  className="flex items-center gap-1 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 text-sm font-medium cursor-pointer"
-                >
-                  <Building2 className="w-4 h-4" />
-                  <span>Sign Up</span>
-                </RouterLink>
-              </>
-            ) : (
-              <div className="relative flex items-center gap-6 bg-gray-100 px-5 py-3 rounded-xl hover:shadow-lg transition">
-                <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-                  <FontAwesomeIcon
-                    icon={faUserTie}
-                    className="text-gray-700 w-6 h-6"
-                  />
-                  <span className="truncate max-w-[140px]">
-                    {user?.name || user?.email}
-                  </span>
+              ))}
+
+              {!isLoggedIn ? (
+                <>
+                  <RouterLink
+                    to="/signin"
+                    className="flex items-center gap-2 text-gray-700 hover:text-purple-700"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Sign In</span>
+                  </RouterLink>
+                  <RouterLink
+                    to="/signup"
+                    className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-orange-500 text-white px-4 py-2 rounded-lg shadow hover:from-purple-700 hover:to-orange-600"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>Sign Up</span>
+                  </RouterLink>
+                </>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <FontAwesomeIcon icon={faUserTie} className="text-purple-600" />
+                    <span>{user?.name || user?.email}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Logout
+                  </button>
                 </div>
+              )}
+            </div>
+        
+          </div>
+
+          {/* Mobile Dropdown */}
+          {isOpen && (
+            <div className="md:hidden mt-2 space-y-2 pb-4">
+              {navItems.map((item) => (
+                <RouterLink
+                  key={item.name}
+                  to={item.href}
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg bg-purple-50 hover:bg-purple-100"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.name}</span>
+                </RouterLink>
+              ))}
+
+              {!isLoggedIn ? (
+                <>
+                  <RouterLink
+                    to="/signin"
+                    className="block px-4 py-2 text-gray-700 hover:bg-purple-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign In
+                  </RouterLink>
+                  <RouterLink
+                    to="/signup"
+                    className="block px-4 py-2 bg-purple-600 text-white rounded-lg text-center hover:bg-purple-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign Up
+                  </RouterLink>
+                </>
+              ) : (
                 <button
                   onClick={handleLogout}
-                  className="text-base px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-bold cursor-pointer"
+                  className="block w-full text-left px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                 >
                   Logout
                 </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </nav>
     </>

@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      name: role === "APPLICANT" ? firstName+" "+lastName : null,
+      name: role === "APPLICANT" ? firstName+" "+lastName : companyName,
       companyName: role === "ADMIN" ? companyName : null,
     },
   });

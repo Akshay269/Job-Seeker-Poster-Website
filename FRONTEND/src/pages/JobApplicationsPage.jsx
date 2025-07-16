@@ -1,3 +1,4 @@
+// ApplicationsView.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -11,16 +12,17 @@ import {
   Search,
 } from "lucide-react";
 import API from "../api/axios";
+import ApplicationModal from "../components/ApplicationModal";
 
 const getStatusColor = (status) => {
   switch (status) {
-    case "Under Review":
+    case "PENDING_REVIEW":
       return "bg-yellow-100 text-yellow-800";
-    case "Shortlisted":
+    case "SHORTLISTED":
       return "bg-green-100 text-green-800";
-    case "Interview Scheduled":
+    case "INTERVIEW_SCHEDULED":
       return "bg-blue-100 text-blue-800";
-    case "Rejected":
+    case "REJECTED":
       return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
@@ -32,20 +34,21 @@ const ApplicationsView = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [applications, setApplications] = useState([]);
+  const [selectedApp, setSelectedApp] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const res = await API.get(`/applications/${jobId}`);
-        setApplications(res.data);
-      } catch (error) {
-        console.error("Failed to fetch applications", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchApplications = async () => {
+    try {
+      const res = await API.get(`/applications/${jobId}`);
+      setApplications(res.data);
+    } catch (error) {
+      console.error("Failed to fetch applications", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchApplications();
   }, [jobId]);
 
@@ -55,10 +58,19 @@ const ApplicationsView = () => {
       app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleStatusUpdate = async (id, newStatus) => {
+    try {
+      await API.patch(`/applications/${id}/status`, { status: newStatus });
+      fetchApplications();
+      setSelectedApp(null);
+    } catch (err) {
+      console.error("Error updating status", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex items-center space-x-4 mb-6">
           <button
             onClick={() => navigate("/dashboard")}
@@ -70,7 +82,6 @@ const ApplicationsView = () => {
           <h1 className="text-2xl font-semibold text-gray-800">Applications</h1>
         </div>
 
-        {/* Search Bar */}
         <div className="relative w-full max-w-md mb-6">
           <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -82,7 +93,6 @@ const ApplicationsView = () => {
           />
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto bg-white rounded-xl shadow">
           <table className="min-w-full text-sm text-left text-gray-600">
             <thead className="text-xs text-gray-500 uppercase bg-gray-100">
@@ -108,7 +118,7 @@ const ApplicationsView = () => {
                           {app.applicant?.name || "N/A"}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {app.previousRole || "-"}
+                          {app.experiences?.[0]?.jobTitle || "-"}
                         </p>
                       </div>
                     </div>
@@ -120,17 +130,17 @@ const ApplicationsView = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Phone className="w-3 h-3 text-gray-400" />
-                      {app.phone || "-"}
+                      {app.contactInfo?.phone || "-"}
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-gray-400" />
-                      {app.location || "-"}
+                      {`${app.contactInfo?.city || "-"} ${app.contactInfo?.country || ""}`}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    <p>{app.experience || "-"}</p>
+                    <p>{app.experiences?.[0]?.jobTitle || "-"}</p>
                     <p className="text-xs text-gray-500">
-                      {app.education || "-"}
+                      {app.educations?.[0]?.degree || "-"}
                     </p>
                     <div className="flex gap-1 flex-wrap mt-1">
                       {(app.skills || []).slice(0, 3).map((skill, idx) => (
@@ -155,11 +165,14 @@ const ApplicationsView = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <Calendar className="w-3 h-3" />
-                      {new Date(app.createdAt).toLocaleDateString()}
+                      {new Date(app.appliedAt).toLocaleDateString()}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <button className="text-gray-500 hover:text-black">
+                    <button
+                      className="text-gray-500 hover:text-black"
+                      onClick={() => setSelectedApp(app)}
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
                   </td>
@@ -178,6 +191,14 @@ const ApplicationsView = () => {
             </tbody>
           </table>
         </div>
+
+        {selectedApp && (
+          <ApplicationModal
+            application={selectedApp}
+            onClose={() => setSelectedApp(null)}
+            onStatusChange={handleStatusUpdate}
+          />
+        )}
       </div>
     </div>
   );

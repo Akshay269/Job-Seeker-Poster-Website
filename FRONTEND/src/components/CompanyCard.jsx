@@ -1,42 +1,37 @@
 import { Building2, MapPin, Users } from "lucide-react";
 
-const CompanyCard = ({ name, industry, location, employees, openJobs, description }) => {
+const CompanyCard = ({ name, location, size, openings = 0, logo }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-black transition-all duration-300">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-16 h-16 bg-black rounded-xl flex items-center justify-center">
-            <Building2 className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold text-black">{name}</h3>
-            <p className="text-gray-600">{industry}</p>
-          </div>
-        </div>
-        <button className="text-sm px-4 py-1.5 rounded-md border border-gray-300 text-black hover:bg-gray-50">
-          Follow
-        </button>
+    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-center">
+      {/* Logo */}
+      <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 shadow-md">
+        {logo ? (
+          <img
+            src={logo}
+            alt={`${name} Logo`}
+            className="w-full h-full object-contain rounded-xl"
+          />
+        ) : (
+          <Building2 className="w-10 h-10 text-white" />
+        )}
       </div>
 
-      <p className="text-gray-600 mb-4 text-sm leading-relaxed">{description}</p>
+      {/* Company Name */}
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+        {name}
+      </h3>
 
-      <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-        <div className="flex items-center space-x-1">
-          <MapPin className="w-4 h-4" />
-          <span>{location}</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <Users className="w-4 h-4" />
-          <span>{employees}</span>
-        </div>
-      </div>
+      {/* Location and Size */}
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center justify-center gap-1">
+        <MapPin className="w-4 h-4" />
+        {location} • {size}
+      </p>
 
-      <div className="flex items-center justify-between">
-        <span className="text-black font-semibold">{openJobs} open positions</span>
-        <button className="text-sm px-4 py-2 rounded-md bg-black text-white hover:bg-gray-800">
-          View Jobs
-        </button>
-      </div>
+      {/* Openings */}
+      <p className="text-sm text-purple-700 dark:text-purple-400 font-medium flex items-center justify-center gap-1">
+        <Users className="w-4 h-4" />
+        {openings} Active Opening{openings !== 1 && "s"}
+      </p>
     </div>
   );
 };
