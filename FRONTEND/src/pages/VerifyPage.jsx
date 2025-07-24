@@ -3,12 +3,12 @@ import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import Spinner from "../components/Spinner";
+import { useLoading } from "../context/LoadingContext";
 
 const Verify = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const { isLoading,setIsLoading } = useLoading();
   const [resendLoading, setResendLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
@@ -37,18 +37,21 @@ const Verify = () => {
   }, [resendTimer]);
 
   const onSubmit = async (data) => {
-    setLoading(true);
+     setIsLoading(true);
     try {
       await API.post("/auth/verify", {
         email: state.email,
         otp: data.otp.trim(),
       });
       toast.success("Account verified successfully!");
-      navigate("/signin");
+      setTimeout(() => {
+        navigate("/signin");
+      }, 500);
+      
     } catch (err) {
       toast.error(err?.response?.data?.message || "Verification failed");
     } finally {
-      setLoading(false);
+       setIsLoading(false);
     }
   };
 
@@ -101,10 +104,10 @@ const Verify = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isLoading}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold transition-all duration-200"
           >
-            {loading ? <Spinner className="text-white w-4 h-4" /> : "Verify"}
+            Verify
           </button>
         </form>
 

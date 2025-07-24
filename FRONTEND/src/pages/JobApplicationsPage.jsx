@@ -1,6 +1,7 @@
-// ApplicationsView.jsx
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useLoading } from "../context/LoadingContext";
 import {
   ArrowLeft,
   Eye,
@@ -35,16 +36,17 @@ const ApplicationsView = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { setIsLoading } = useLoading();
 
   const fetchApplications = async () => {
+    setIsLoading(true);
     try {
       const res = await API.get(`/applications/${jobId}`);
       setApplications(res.data);
     } catch (error) {
       console.error("Failed to fetch applications", error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -59,6 +61,7 @@ const ApplicationsView = () => {
   );
 
   const handleStatusUpdate = async (id, newStatus) => {
+    setIsLoading(true);
     try {
       await API.patch(`/applications/${id}/status`, { status: newStatus });
       fetchApplications();
@@ -66,36 +69,43 @@ const ApplicationsView = () => {
     } catch (err) {
       console.error("Error updating status", err);
     }
+    finally{
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white py-10 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center space-x-4 mb-6">
+        <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center space-x-1 text-sm text-blue-600 hover:underline"
+            className="flex items-center text-sm text-purple-700 hover:underline"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back to Dashboard
           </button>
-          <h1 className="text-2xl font-semibold text-gray-800">Applications</h1>
+          <h1 className="text-3xl font-semibold text-gray-800 tracking-tight">
+            Applications
+          </h1>
         </div>
 
-        <div className="relative w-full max-w-md mb-6">
+        {/* Search Box */}
+        <div className="relative max-w-md mb-6">
           <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
             placeholder="Search applicants..."
-            className="w-full pl-10 pr-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <div className="overflow-x-auto bg-white rounded-xl shadow">
-          <table className="min-w-full text-sm text-left text-gray-600">
-            <thead className="text-xs text-gray-500 uppercase bg-gray-100">
+        {/* Applications Table */}
+        <div className="overflow-x-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-gray-200">
+          <table className="min-w-full text-sm text-left text-gray-700">
+            <thead className="bg-purple-50 text-xs uppercase text-gray-500 tracking-wider">
               <tr>
                 <th className="px-6 py-3">Applicant</th>
                 <th className="px-6 py-3">Contact</th>
@@ -107,14 +117,14 @@ const ApplicationsView = () => {
             </thead>
             <tbody>
               {filteredApps.map((app) => (
-                <tr key={app.id} className="border-b hover:bg-gray-50">
+                <tr key={app.id} className="border-b hover:bg-purple-50/30">
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-gray-600" />
+                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-purple-700" />
                       </div>
                       <div>
-                        <p className="font-medium text-black">
+                        <p className="font-semibold text-gray-800">
                           {app.applicant?.name || "N/A"}
                         </p>
                         <p className="text-xs text-gray-500">
@@ -124,17 +134,17 @@ const ApplicationsView = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 space-y-1 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Mail className="w-3 h-3 text-gray-400" />
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <Mail className="w-3 h-3" />
                       {app.applicant?.email || "-"}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-gray-400" />
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <Phone className="w-3 h-3" />
                       {app.contactInfo?.phone || "-"}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-gray-400" />
-                      {`${app.contactInfo?.city || "-"} ${app.contactInfo?.country || ""}`}
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <MapPin className="w-3 h-3" />
+                      {`${app.contactInfo?.city || "-"}, ${app.contactInfo?.country || ""}`}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
@@ -146,7 +156,7 @@ const ApplicationsView = () => {
                       {(app.skills || []).slice(0, 3).map((skill, idx) => (
                         <span
                           key={`${skill.name}-${idx}`}
-                          className="px-2 py-0.5 text-xs bg-gray-100 rounded-md"
+                          className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-md"
                         >
                           {skill.name}
                         </span>
@@ -159,7 +169,7 @@ const ApplicationsView = () => {
                         app.status
                       )}`}
                     >
-                      {app.status}
+                      {app.status.replaceAll("_", " ")}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -170,7 +180,7 @@ const ApplicationsView = () => {
                   </td>
                   <td className="px-6 py-4">
                     <button
-                      className="text-gray-500 hover:text-black"
+                      className="text-purple-600 hover:text-purple-800 transition"
                       onClick={() => setSelectedApp(app)}
                     >
                       <Eye className="w-4 h-4" />
@@ -178,11 +188,11 @@ const ApplicationsView = () => {
                   </td>
                 </tr>
               ))}
-              {!loading && filteredApps.length === 0 && (
+              {!setIsLoading && filteredApps.length === 0 && (
                 <tr>
                   <td
                     colSpan="6"
-                    className="px-6 py-8 text-center text-gray-500"
+                    className="px-6 py-10 text-center text-gray-400"
                   >
                     No applications found.
                   </td>

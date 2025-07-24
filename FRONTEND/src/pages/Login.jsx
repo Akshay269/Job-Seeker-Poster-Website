@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import Spinner from "../components/Spinner";
+import { useLoading } from "../context/LoadingContext";
 import { toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
@@ -22,7 +22,7 @@ const Login = () => {
 
   const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const {isLoading, setIsLoading } = useLoading();
 
   useEffect(() => {
     if (location.state?.role === "ADMIN") {
@@ -31,7 +31,7 @@ const Login = () => {
   }, [location.state]);
 
   const onSubmit = async (data) => {
-    setLoading(true);
+   setIsLoading(true);
     try {
       const res = await API.post("/auth/login", { ...data, role });
       const { user, token } = res.data;
@@ -56,18 +56,18 @@ const Login = () => {
     } catch (err) {
       toast.error(err?.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Left Image Panel */}
-      <div className="hidden md:block md:w-1/2 h-full relative transition-all duration-500">
+      <div className="hidden md:block md:w-1/2 h-full relative overflow-hidden">
         <img
           src={role === "APPLICANT" ? seekerImage : employerImage}
           alt="Login Visual"
-          className="w-full h-full object-cover transition-opacity duration-500"
+          className="w-full h-full object-cover absolute inset-0 opacity-0 animate-fadeIn"
         />
       </div>
 
@@ -198,14 +198,10 @@ const Login = () => {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200 flex justify-center items-center"
               >
-                {loading ? (
-                  <Spinner className="text-white w-4 h-4" />
-                ) : (
-                  "Sign In"
-                )}
+              Sign in
               </button>
 
               <div className="text-center">

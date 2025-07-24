@@ -46,6 +46,56 @@ exports.register = async (req, res) => {
   });
 };
 
+exports.login = async (req, res) => {
+  const { email, password, role } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user || user.role !== role) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // If the user is not verified, send OTP and halt login flow
+    if (!user.isVerified) {
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+      await prisma.user.update({
+        where: { email },
+        data: { otp, otpExpires },
+      });
+
+      console.log(`🔐 Login-triggered OTP for ${email}: ${otp}`);
+
+      return res.status(202).json({
+        message: "Account not verified. OTP sent.",
+        user: {
+          email: user.email,
+          role: user.role,
+          isVerified: false,
+        },
+      });
+    }
+
+    const token = generateToken({ userId: user.id, role: user.role });
+    const { password: _, otp, otpExpires, ...userData } = user;
+
+    return res.json({
+      user: userData,
+      token,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 exports.verifyAccount = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -69,29 +119,6 @@ exports.verifyAccount = async (req, res) => {
   });
 
   return res.json({ message: "Account verified successfully" });
-};
-
-exports.login = async (req, res) => {
-  const { email, password, role } = req.body;
-
-  const user = await prisma.user.findUnique({ where: { email } });
-
-  if (!user || user.role !== role) {
-    return res.status(401).json({ message: "Invalid credentials" });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(401).json({ message: "Invalid credentials" });
-  }
-
-  const token = generateToken({ userId: user.id, role: user.role });
-  const { password: _, ...userData } = user;
-
-  return res.json({
-    user: userData, 
-    token,
-  });
 };
 
 exports.resendOTP = async (req, res) => {

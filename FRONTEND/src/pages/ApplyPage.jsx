@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import API from "../api/axios";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import Spinner from "../components/Spinner";
 import PersonalInfoForm from "../components/apply/PersonalInfoForm";
 import ContactInfoForm from "../components/apply/ContactInfoForm";
 import ExperienceForm from "../components/apply/ExperienceForm";
@@ -13,6 +12,7 @@ import DocumentsForm from "../components/apply/DocumentsForm";
 import ReviewForm from "../components/apply/ReviewForm";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
+import { useLoading } from "../context/LoadingContext";
 
 const ApplyPage = () => {
   const { jobId } = useParams();
@@ -20,9 +20,8 @@ const ApplyPage = () => {
   const totalSteps = 7;
 
   const [job, setJob] = useState(null);
-  const [loadingJob, setLoadingJob] = useState(true);
-  const [loadingDraft, setLoadingDraft] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const { isLoading,setIsLoading } = useLoading();
+  const [ setSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
 
@@ -86,13 +85,14 @@ const ApplyPage = () => {
 
   useEffect(() => {
     const fetchJob = async () => {
+       setIsLoading(true);
       try {
         const res = await API.get(`/jobs/${jobId}`);
         setJob(res.data);
       } catch (err) {
         console.error("Failed to fetch job details", err);
       } finally {
-        setLoadingJob(false);
+        setIsLoading(false);
       }
     };
     fetchJob();
@@ -161,7 +161,7 @@ const ApplyPage = () => {
       } catch (err) {
         console.error("Failed to fetch draft", err);
       } finally {
-        setLoadingDraft(false);
+         setIsLoading(false);
       }
     };
     fetchDraft();
@@ -302,7 +302,7 @@ const ApplyPage = () => {
     }
   };
 
-  if (!loadingJob && !job) {
+  if (!isLoading && !job) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold">
         Job not found or no longer accepting applications.
@@ -312,11 +312,6 @@ const ApplyPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
-      {(loadingJob || loadingDraft || submitting) && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Spinner className="w-8 h-8 text-black" />
-        </div>
-      )}
 
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">

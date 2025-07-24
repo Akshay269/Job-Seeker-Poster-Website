@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import JobCard from "../components/JobCard";
 import SidebarFilters from "../components/SideBarFilters";
 import API from "../api/axios";
-import Spinner from "../components/Spinner";
+import { Link } from "react-router-dom";
+import {useLoading} from "../context/LoadingContext";
 
 const Dashboard = () => {
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { setIsLoading } = useLoading();
 
   useEffect(() => {
+    setIsLoading(true);
     const fetchAdminJobs = async () => {
       try {
         const res = await API.get("/jobs/postedjobs");
@@ -16,7 +18,7 @@ const Dashboard = () => {
       } catch (err) {
         console.error("Failed to fetch admin jobs", err);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -24,33 +26,34 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
-      {/* Spinner Overlay */}
-      {loading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Spinner className="w-8 h-8 text-black" />
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-pink-900 text-white">
+      
 
-      <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-        <SidebarFilters /> {/* You can customize this later for admin-specific filters */}
+      <div className="px-4 py-8 max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+        <div className="md:col-span-1">
+          <SidebarFilters />
+        </div>
 
         <main className="md:col-span-3">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">Your Posted Jobs</h2>
-            <a
-              href="/post-job"
-              className="text-sm font-medium text-blue-600 hover:underline"
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-transparent bg-clip-text drop-shadow-lg">
+              Your Posted Jobs
+            </h2>
+            <Link
+              to="/post-job"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition duration-300 text-sm font-medium"
             >
               + Post New Job
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.length === 0 && !loading ? (
-              <p className="text-gray-500 col-span-full">No jobs posted yet.</p>
+            {jobs.length === 0 && !setIsLoading ? (
+              <p className="text-gray-300 col-span-full text-center">
+                No jobs posted yet.
+              </p>
             ) : (
-              jobs.map((job) => <JobCard key={job.id} job={job} role={"ADMIN"} />)
+              jobs.map((job) => <JobCard key={job.id} job={job} role="ADMIN" />)
             )}
           </div>
         </main>

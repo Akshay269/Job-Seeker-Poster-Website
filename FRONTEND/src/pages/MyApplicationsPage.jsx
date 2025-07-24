@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Calendar, MapPin, Building2, Search, FileText, ExternalLink, Eye, Download } from "lucide-react";
+import { Search, Eye, Download } from "lucide-react";
 import { format } from "date-fns";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
-import Spinner from "../components/Spinner";
+import { useLoading } from "../context/LoadingContext";
 import { toast } from "react-hot-toast";
 
 const MyApplications = () => {
@@ -11,11 +11,12 @@ const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const { setIsLoading } = useLoading();
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     const fetchApplications = async () => {
+       setIsLoading(true);
       if (!user?.id) return;
       try {
         const res = await API.get(`/applications/user/${user.id}`);
@@ -24,7 +25,7 @@ const MyApplications = () => {
         console.error("Failed to fetch applications", err);
         toast.error("Failed to fetch applications.");
       } finally {
-        setLoading(false);
+         setIsLoading(false);
       }
     };
     fetchApplications();
@@ -54,11 +55,7 @@ const MyApplications = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {loading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Spinner className="w-8 h-8 text-black" />
-        </div>
-      )}
+  
 
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-2 text-gray-900">My Applications</h1>
@@ -126,7 +123,7 @@ const MyApplications = () => {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && !loading && (
+              {filtered.length === 0 && !setIsLoading && (
                 <tr>
                   <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
                     No applications found.

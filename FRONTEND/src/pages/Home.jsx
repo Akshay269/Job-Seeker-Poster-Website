@@ -1,35 +1,30 @@
-// Updated Home.jsx with Sacred-Themed Hero and Dual Path UI
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Award,
-  Star,
-  Shield,
-  Clock,
-  TrendingUp,
   Search,
   MapPin,
   Users,
   Briefcase,
   Sparkles,
   ArrowRight,
-  Target,
-  Zap,
 } from "lucide-react";
 import JobCard from "../components/JobCard";
 import CompanyCard from "../components/CompanyCard";
-import Spinner from "../components/Spinner";
 import Anvaya2 from "../assets/Anvaya2.png";
 import { useNavigate } from "react-router-dom";
+import { useLoading } from "../context/LoadingContext";
+
 
 const input =
   "w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black text-base";
 
 const Home = () => {
-  const [loading, setLoading] = useState(true);
+ const { setIsLoading } = useLoading();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -91,14 +86,6 @@ const Home = () => {
       description: "Sustainable technology solutions for a greener tomorrow.",
     },
   ];
-
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
-        <Spinner className="w-8 h-8 text-black" />
-      </div>
-    );
-  }
 
   const features = [
     {

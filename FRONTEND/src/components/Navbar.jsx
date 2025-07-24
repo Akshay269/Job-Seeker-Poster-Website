@@ -11,18 +11,18 @@ import {
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserTie } from "@fortawesome/free-solid-svg-icons";
-import Spinner from "./Spinner";
+import { useLoading } from "../context/LoadingContext";
 import Anvaya2 from "../assets/Anvaya2.png";
 import { useState } from "react";
 
 const Navbar = () => {
-  const [loading, setLoading] = useState(false);
+const { setIsLoading } = useLoading();
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    setLoading(true);
+     setIsLoading(true);
     try {
       logout();
       toast.success("Logged out successfully");
@@ -30,16 +30,19 @@ const Navbar = () => {
     } catch {
       toast.error("Logout failed");
     } finally {
-      setTimeout(() => setLoading(false), 500);
+      setTimeout(() =>   setIsLoading(false), 500);
     }
   };
 
   const navItems = [
-    { name: "Jobs", href: "/jobs", icon: Briefcase },
     { name: "About", href: "/about", icon: Info },
   ];
-
   if (isLoggedIn && user?.role === "APPLICANT") {
+    navItems.push({
+      name: "Jobs",
+      href: "/jobs",
+      icon: Briefcase,
+    });
     navItems.push({
       name: "My Applications",
       href: "/myapplications",
@@ -53,15 +56,14 @@ const Navbar = () => {
 
   return (
     <>
-      {loading && <Spinner isLoading />}
 
       <nav className="relative bg-white/80 backdrop-blur-lg border-b border-gray-200 top-0 z-50">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-orange-100/20"></div>
 
-        <div className="max-w-10xl mx-auto px-4 sm:px-7 lg:px-9 relative">
+        <div className="max-w-10xl mx-auto px-4 sm:px-7 lg:px-3 relative">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <RouterLink to="/" className="flex items-center gap-3">
+            <RouterLink to="/" className="flex items-center gap-0">
               <div className="relative">
                 <img
                   src={Anvaya2}

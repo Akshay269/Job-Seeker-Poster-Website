@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
-import Spinner from "../components/Spinner";
+import { useLoading } from "../context/LoadingContext";
 import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -21,10 +21,10 @@ const Register = () => {
   const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+    const { isLoading, setIsLoading } = useLoading();
 
   const onSubmit = async (data) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       await API.post("/auth/register", { ...data, role });
       toast.success("Registration successful. Please login.");
@@ -41,7 +41,7 @@ const Register = () => {
     } catch (err) {
       toast.error(err?.response?.data?.message || "Registration failed");
     } finally {
-      setLoading(false);
+     setIsLoading(false);
     }
   };
 
@@ -271,14 +271,9 @@ const Register = () => {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-xl font-semibold transition-all duration-200"
               >
-                {loading ? (
-                  <Spinner className="text-white w-4 h-4" />
-                ) : (
-                  "Create Account"
-                )}
               </button>
 
               <p className="text-center text-sm text-gray-600 mt-6">

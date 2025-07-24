@@ -2,8 +2,15 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.getAllJobs = async (req, res) => {
+  const page=parseInt(req.query.page)||1;
+  const limit=parseInt(req.query.limit)||10;
+  const skip=(page-1)*limit;
   try {
+    const totalJobs=await prisma.job.count();
     const jobs = await prisma.job.findMany({
+      skip,
+      take:limit,
+
       where: {
         status: "ACTIVE",
       },
@@ -15,7 +22,12 @@ exports.getAllJobs = async (req, res) => {
       },
     });
 
-    res.json(jobs);
+     res.status(200).json({
+      jobs,
+      totalJobs,
+      currentPage: page,
+      totalPages: Math.ceil(totalJobs / limit),
+    });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch jobs" });
   }
@@ -70,7 +82,7 @@ exports.postJob = async (req, res) => {
     companyWebsite,
     deadline,
   } = req.body;
-  console.log("user", req.user);
+  // console.log("user", req.user);
   const userId = req.user.userId;
 
   try {
@@ -103,7 +115,7 @@ exports.postJob = async (req, res) => {
 
 exports.getPostedJobs = async (req, res) => {
   try {
-    console.log("postreq",req.user);
+    // console.log("postreq",req.user);
     const userId = req.user.userId;
     const userRole = req.user.role;
 
