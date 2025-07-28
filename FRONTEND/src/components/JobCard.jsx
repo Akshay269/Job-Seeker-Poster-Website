@@ -47,18 +47,17 @@ const JobCard = ({ job, role, draft }) => {
       data.personalInfo?.summary &&
       data.personalInfo?.nationality
     )
-      filledSections++;
+      filledSections+=6;
     if (
-      data.contactInfo?.email &&
-      data.contactInfo?.phone &&
+      data.contactInfo.email &&
+      data.contactInfo.phone &&
       data.contactInfo.address &&
       data.contactInfo.city &&
       data.contactInfo.state &&
       data.contactInfo.zip &&
-      data.contactInfo.linkedIn &&
       data.contactInfo.country
     )
-      filledSections++;
+      filledSections+=7;
     if ((data.experiences || []).length > 0) filledSections++;
     if ((data.educations || []).length > 0) filledSections++;
     if ((data.skills || []).length > 0) filledSections++;

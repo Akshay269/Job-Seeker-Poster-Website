@@ -120,20 +120,19 @@ const Home = () => {
 
   return (
     <>
-      {/* SACRED THEMED HERO SECTION */}
       <section className="bg-gradient-to-br from-purple-50/50 via-pink-50/30 to-orange-50/50 py-20 lg:py-28 overflow-hidden relative">
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-400 to-orange-400 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-400 to-orange-400 rounded-full blur-3xl delay-1000"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="flex justify-center mb-12">
-            <div className="w-100 h-100 bg-gradient-to-br from-white via-purple-50 to-pink-50 rounded-full shadow-2xl flex items-center border-2 border-purple-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center animate-pulse">
+          <div className="flex justify-center mb-1">
+            <div className="w-80 h-80 justify-center bg-gradient-to-br from-white via-purple-50 to-pink-50 rounded-full shadow-2xl flex items-center border-2 border-purple-200">
               <img
                 src={Anvaya2}
                 alt="Anvaya Lotus"
-                className="w-100 h-100 object-cover drop-shadow-xl"
+                className="w-70 h-70 object-cover drop-shadow-xl "
               />
             </div>
           </div>

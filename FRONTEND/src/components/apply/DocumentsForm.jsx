@@ -2,6 +2,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Upload, File, X, Plus } from "lucide-react";
 import { useRef } from "react";
 import API from "../../api/axios";
+import { useLoading } from "../../context/LoadingContext";
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
@@ -11,7 +12,6 @@ const getUploadSignature = async () => {
 };
 
 const uploadToCloudinary = async (file) => {
-  console.log(file.type);
   const { timestamp, signature, apiKey, folder } = await getUploadSignature();
   const formData = new FormData();
 
@@ -20,11 +20,13 @@ const uploadToCloudinary = async (file) => {
   formData.append("timestamp", timestamp);
   formData.append("signature", signature);
   formData.append("folder", folder);
-  formData.append("resource_type", "auto");
 
+  // Infer resource_type based on file MIME type
+  const isImageOrPdf = file.type.startsWith("image/") || file.type === "application/pdf";
+  const resourceType = isImageOrPdf ? "image" : "raw";
 
   const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
     {
       method: "POST",
       body: formData,
@@ -48,29 +50,46 @@ const DocumentsForm = () => {
     watch,
     formState: { errors },
   } = useFormContext();
+  const { setIsLoading } = useLoading();
 
   const other = watch("other") || [];
   const otherFilesRef = useRef();
 
   const handleOtherFilesChange = async (e) => {
     const files = Array.from(e.target.files || []);
-    const uploaded = await Promise.all(
-      files.map(async (file) => {
-        try {
-          return await uploadToCloudinary(file);
-        } catch (err) {
-          console.error("Upload failed", err);
-          return null;
-        }
-      })
-    );
-    setValue("other", [...other, ...uploaded.filter(Boolean)], { shouldValidate: true });
+    if (files.length === 0) return;
+
+    try {
+      setIsLoading(true);
+      const uploaded = await Promise.all(
+        files.map(async (file) => {
+          try {
+            return await uploadToCloudinary(file);
+          } catch (err) {
+            console.error("Upload failed", err);
+            return null;
+          }
+        })
+      );
+
+      setValue("other", [...other, ...uploaded.filter(Boolean)], {
+        shouldValidate: true,
+      });
+    } catch (err) {
+      console.error("File upload error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const removeOtherFile = async (index) => {
-    const updated = [...other];
-    const fileToDelete = updated.splice(index, 1)[0];
-    setValue("other", updated, { shouldValidate: true });
+    const files = [...other];
+    const fileToDelete = files[index];
+    if (!fileToDelete?.publicId) return;
+
+    setValue("other", files.filter((_, i) => i !== index), {
+      shouldValidate: true,
+    });
 
     try {
       await deleteFromCloudinary(fileToDelete.publicId);
@@ -110,11 +129,14 @@ const DocumentsForm = () => {
                   type="button"
                   className="text-gray-500 hover:text-red-600"
                   onClick={async () => {
+                    setIsLoading(true);
                     try {
                       await deleteFromCloudinary(value.publicId);
                       onChange(null);
                     } catch (err) {
                       console.error("Failed to delete", err);
+                    } finally {
+                      setIsLoading(false);
                     }
                   }}
                 >
@@ -130,13 +152,16 @@ const DocumentsForm = () => {
                   id={`file-${field}`}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      try {
-                        const uploaded = await uploadToCloudinary(file);
-                        onChange(uploaded);
-                      } catch (err) {
-                        console.error("Upload failed", err);
-                      }
+                    if (!file) return;
+
+                    setIsLoading(true);
+                    try {
+                      const uploaded = await uploadToCloudinary(file);
+                      onChange(uploaded);
+                    } catch (err) {
+                      console.error("Upload failed", err);
+                    } finally {
+                      setIsLoading(false);
                     }
                   }}
                 />
@@ -164,11 +189,24 @@ const DocumentsForm = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FileUploadBox label="Resume" field="resume" accept=".pdf,.doc,.docx" required />
-        <FileUploadBox label="Cover Letter" field="coverLetter" accept=".pdf,.doc,.docx" />
+        <FileUploadBox
+          label="Resume"
+          field="resume"
+          accept=".pdf,.doc,.docx"
+          required
+        />
+        <FileUploadBox
+          label="Cover Letter"
+          field="coverLetter"
+          accept=".pdf,.doc,.docx"
+        />
       </div>
 
-      <FileUploadBox label="Portfolio" field="portfolio" accept=".pdf,.doc,.docx,.zip" />
+      <FileUploadBox
+        label="Portfolio"
+        field="portfolio"
+        accept=".pdf,.doc,.docx,.zip"
+      />
 
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
         <div className="text-center space-y-2 mb-4">
@@ -226,12 +264,22 @@ const DocumentsForm = () => {
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2">File Upload Guidelines:</h4>
+        <h4 className="font-medium text-blue-900 mb-2">
+          File Upload Guidelines:
+        </h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Maximum file size: 10MB per file</li>
-          <li>• Accepted formats: PDF, DOC, DOCX, JPG, PNG, ZIP</li>
-          <li>• Ensure all documents are clearly readable</li>
-          <li>• Resume is required for application submission</li>
+          <li>
+            • Maximum file size: 10MB per file
+          </li>
+          <li>
+            • Accepted formats: PDF, DOC, DOCX, JPG, PNG, ZIP
+          </li>
+          <li>
+            • Ensure all documents are clearly readable
+          </li>
+          <li>
+            • Resume is required for application submission
+          </li>
         </ul>
       </div>
     </div>

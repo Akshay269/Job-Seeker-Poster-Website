@@ -13,15 +13,17 @@ import ReviewForm from "../components/apply/ReviewForm";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
 import { useLoading } from "../context/LoadingContext";
+import { useNavigate } from "react-router-dom";
 
 const ApplyPage = () => {
   const { jobId } = useParams();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 7;
+  const navigate = useNavigate();
 
   const [job, setJob] = useState(null);
-  const { isLoading,setIsLoading } = useLoading();
-  const [ setSubmitting] = useState(false);
+  const { isLoading, setIsLoading } = useLoading();
+  const { setSubmitting } = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
 
@@ -85,7 +87,7 @@ const ApplyPage = () => {
 
   useEffect(() => {
     const fetchJob = async () => {
-       setIsLoading(true);
+      setIsLoading(true);
       try {
         const res = await API.get(`/jobs/${jobId}`);
         setJob(res.data);
@@ -107,7 +109,6 @@ const ApplyPage = () => {
         const drafts = res.data;
         const draft = drafts.find((d) => d.jobId === jobId);
         if (draft?.data) {
-          console.log("draft data", draft.data);
           const data = draft.data;
           methods.reset({
             personalInfo: {
@@ -161,7 +162,7 @@ const ApplyPage = () => {
       } catch (err) {
         console.error("Failed to fetch draft", err);
       } finally {
-         setIsLoading(false);
+        setIsLoading(false);
       }
     };
     fetchDraft();
@@ -224,6 +225,9 @@ const ApplyPage = () => {
     try {
       await API.put(`/drafts/${user.id}/${jobId}`, draftPayload);
       toast.success("Draft saved successfully");
+      setTimeout(() => {
+        navigate("/jobs");
+      }, 500);
     } catch {
       toast.error("Failed to save draft");
     }
@@ -269,6 +273,9 @@ const ApplyPage = () => {
       const res = await API.post("applications/submit", payload);
       toast.success("Application submitted successfully!", res);
       setHasSubmitted(true);
+      setTimeout(() => {
+        navigate("/jobs");
+      }, 500);
     } catch (err) {
       console.error("❌ Failed to submit application", err);
       toast.error("Error submitting application.");
@@ -301,7 +308,8 @@ const ApplyPage = () => {
         return null;
     }
   };
-
+  console.log(isLoading);
+  console.log(job);
   if (!isLoading && !job) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold">
@@ -312,7 +320,6 @@ const ApplyPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
-
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -377,7 +384,7 @@ const ApplyPage = () => {
               <button
                 type="button"
                 onClick={prevStep}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 inline mr-1" />
                 Previous
@@ -388,7 +395,7 @@ const ApplyPage = () => {
               <button
                 type="button"
                 onClick={handleSaveDraft}
-                className="px-4 py-2 bg-white border border-black text-black rounded-md hover:bg-gray-100 text-sm"
+                className="px-4 py-2 bg-white border border-black text-black rounded-md hover:bg-gray-100 text-sm cursor-pointer"
               >
                 Save as Draft
               </button>
@@ -398,7 +405,7 @@ const ApplyPage = () => {
                   type="button"
                   onClick={handleSubmit(onSubmit)}
                   disabled={isSubmitting || hasSubmitted}
-                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm cursor-pointer"
                 >
                   <Check className="w-4 h-4 inline mr-1" />
                   Submit Application
@@ -408,7 +415,7 @@ const ApplyPage = () => {
                   type="button"
                   onClick={nextStep}
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm"
+                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm cursor-pointer"
                 >
                   Next <ArrowRight className="w-4 h-4 inline ml-1" />
                 </button>

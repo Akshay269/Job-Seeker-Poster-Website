@@ -30,7 +30,6 @@ exports.getSignature = async (req, res) => {
 };
 
 exports.deleteFile = async (req, res) => {
-  debugger;
   const { publicId } = req.body;
 
   if (!publicId) {
@@ -38,9 +37,15 @@ exports.deleteFile = async (req, res) => {
   }
 
   try {
-    const result = await cloudinary.uploader.destroy(publicId, {
+    let result = await cloudinary.uploader.destroy(publicId, {
       resource_type: "raw",
     });
+
+    if (result.result === "not found") {
+      result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: "image",
+      });
+    }
 
     if (result.result !== "ok") {
       return res.status(400).json({ error: "Failed to delete file", result });

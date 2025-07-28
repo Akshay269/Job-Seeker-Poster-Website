@@ -63,12 +63,12 @@ const { setIsLoading } = useLoading();
         <div className="max-w-10xl mx-auto px-4 sm:px-7 lg:px-3 relative">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <RouterLink to="/" className="flex items-center gap-0">
+            <RouterLink to="/" className="flex items-center gap-2">
               <div className="relative">
                 <img
                   src={Anvaya2}
                   alt="Anvaya Logo"
-                  className="w-20 h-20 object-cover drop-shadow-xl"
+                  className="w-15 h-15 object-cover drop-shadow-xl"
                 />
               </div>
               <div className="flex flex-col">
