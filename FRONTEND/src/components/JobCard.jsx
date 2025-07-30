@@ -23,7 +23,6 @@ const JobCard = ({ job, role, draft }) => {
     createdAt,
     requirements,
     benefits,
-    applications = [],
   } = job;
 
   const isApplicant = role === "APPLICANT";
@@ -47,7 +46,7 @@ const JobCard = ({ job, role, draft }) => {
       data.personalInfo?.summary &&
       data.personalInfo?.nationality
     )
-      filledSections+=6;
+      filledSections += 6;
     if (
       data.contactInfo.email &&
       data.contactInfo.phone &&
@@ -57,7 +56,7 @@ const JobCard = ({ job, role, draft }) => {
       data.contactInfo.zip &&
       data.contactInfo.country
     )
-      filledSections+=7;
+      filledSections += 7;
     if ((data.experiences || []).length > 0) filledSections++;
     if ((data.educations || []).length > 0) filledSections++;
     if ((data.skills || []).length > 0) filledSections++;
@@ -85,6 +84,7 @@ const JobCard = ({ job, role, draft }) => {
                   {title}
                 </h3>
                 <p className="text-gray-600 text-sm">{companyName}</p>
+
               </div>
             </div>
 
@@ -98,26 +98,22 @@ const JobCard = ({ job, role, draft }) => {
                 </Link>
               )}
               {isAdmin && (
-                <>
+                <div className="flex items-center space-x-2">
                   <Link
                     to={`/job/${id}/details`}
-                    className="flex items-center text-sm text-gray-600 hover:text-purple-700 transition gap-2"
+                    className="flex items-center text-xs text-gray-600 hover:text-purple-700 transition gap-2"
                     title="View Job Details"
                   >
-                    View Details
-                    <Briefcase className="w-5 h-5 text-orange-400" />
+                    <Briefcase className="w-6 h-6 text-orange-400" />
                   </Link>
-                  {applications?.length > 0 && (
-                    <Link
-                      to={`/job/${id}/applications`}
-                      className="flex items-center text-sm text-gray-600 hover:text-purple-700 transition gap-2"
-                      title="View Applications"
-                    >
-                      View Applications
-                      <Users className="w-5 h-5 text-orange-400" />
-                    </Link>
-                  )}
-                </>
+                  <Link
+                    to={`/job/${id}/applications`}
+                    className="flex items-center text-xs text-gray-600 hover:text-purple-700 transition gap-2"
+                    title="View Applications"
+                  >
+                    <Users className="w-6 h-6 text-orange-400" />
+                  </Link>
+                </div>
               )}
             </div>
           </div>
@@ -139,24 +135,24 @@ const JobCard = ({ job, role, draft }) => {
           </div>
 
           {/* Requirements */}
-          {requirements?.length > 0 && (
+          {requirements && (
             <div className="mb-2">
               <div className="flex items-center space-x-2 text-sm text-purple-700 font-medium mb-1">
                 <ListChecks className="w-4 h-4" />
                 <span>Requirements:</span>
               </div>
-              <span>{requirements}</span>
+              <span className="text-black">{requirements}</span>
             </div>
           )}
 
           {/* Benefits */}
-          {benefits?.length > 0 && (
+          {benefits && (
             <div className="mb-2">
               <div className="flex items-center space-x-2 text-sm text-pink-600 font-medium mb-1">
                 <Gift className="w-4 h-4" />
                 <span>Benefits:</span>
               </div>
-              <span>{benefits}</span>
+              <span className="text-black">{benefits}</span>
             </div>
           )}
 

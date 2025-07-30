@@ -179,15 +179,7 @@ const Login = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">
-                    Remember me
-                  </span>
-                </label>
+            
                 <Link
                   to="/forgot-password"
                   className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
@@ -199,7 +191,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200 flex justify-center items-center"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200 flex justify-center items-center cursor-pointer"
               >
               Sign in
               </button>
@@ -209,7 +201,7 @@ const Login = () => {
                   Don't have an account?{" "}
                   <Link
                     to="/signup"
-                    className="text-purple-600 font-medium hover:text-purple-700 hover:underline"
+                    className="text-purple-600 font-medium hover:text-purple-700 hover:underline cursor-pointer"
                   >
                     Sign up
                   </Link>

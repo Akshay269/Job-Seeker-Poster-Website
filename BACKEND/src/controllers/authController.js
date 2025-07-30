@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const generateOTP = require("../utils/generateOtp");
+const sendEmail = require("../utils/sendEmail");
+const VerifyEmailTemplate = require("../utils/emailTemplates/VerifyEmailTemplate");
 
 const prisma = new PrismaClient();
 
@@ -34,7 +36,11 @@ exports.register = async (req, res) => {
     },
   });
 
-  console.log(`🔐 OTP for ${email}: ${otp}`); // Replace with email/SMS later
+  await sendEmail({
+    to: email,
+    subject: "Your OTP for Anvaya",
+    html: VerifyEmailTemplate({ name: user.name, otp }),
+  });
 
   return res.status(201).json({
     message: "Registered. OTP sent for verification.",
@@ -71,7 +77,11 @@ exports.login = async (req, res) => {
         data: { otp, otpExpires },
       });
 
-      console.log(`🔐 Login-triggered OTP for ${email}: ${otp}`);
+      await sendEmail({
+        to: email,
+        subject: "Your OTP for Anvaya",
+        html: VerifyEmailTemplate({ name: user.name, otp }),
+      });
 
       return res.status(202).json({
         message: "Account not verified. OTP sent.",
@@ -135,6 +145,10 @@ exports.resendOTP = async (req, res) => {
     data: { otp, otpExpires },
   });
 
-  console.log(`🔁 Resent OTP for ${email}: ${otp}`);
+  await sendEmail({
+    to: email,
+    subject: "Your Resend OTP for Anvaya",
+    html: VerifyEmailTemplate({ name: user.name, otp }),
+  });
   return res.json({ message: "OTP resent successfully" });
 };

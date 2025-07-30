@@ -1,5 +1,7 @@
-const { PrismaClient ,ApplicationStatus} = require("@prisma/client");
+const { PrismaClient, ApplicationStatus } = require("@prisma/client");
 const prisma = new PrismaClient();
+const sendEmail = require("../utils/sendEmail");
+const appSubmitEmailTemplate = require("../utils/emailTemplates/appSubmitEmailTemplate");
 
 exports.getApplicationsbyId = async (req, res) => {
   const { jobId } = req.params;
@@ -72,9 +74,9 @@ exports.updateApplicationStatus = async (req, res) => {
 
   const allowedStatuses = {
     "Pending Review": ApplicationStatus.PENDING_REVIEW,
-    "Shortlisted": ApplicationStatus.SHORTLISTED,
+    Shortlisted: ApplicationStatus.SHORTLISTED,
     "Interview Scheduled": ApplicationStatus.INTERVIEW_SCHEDULED,
-    "Rejected": ApplicationStatus.REJECTED,
+    Rejected: ApplicationStatus.REJECTED,
   };
 
   const prismaStatus = allowedStatuses[status];
@@ -130,6 +132,15 @@ exports.submitApplication = async (req, res) => {
         portfolio,
         otherFiles,
       },
+    });
+
+    await sendEmail({
+      to: contactInfo?.email,
+      subject: `Application for ${newApplication.jobTitle} Submitted Successfully!`,
+      html: appSubmitEmailTemplate({
+        fullName: personalInfo.fullName || "Candidate",
+        jobTitle: newApplication.jobTitle || "the position",
+      }),
     });
 
     res

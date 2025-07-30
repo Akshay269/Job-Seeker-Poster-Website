@@ -20,10 +20,9 @@ const ApplyPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 7;
   const navigate = useNavigate();
-
   const [job, setJob] = useState(null);
-  const { isLoading, setIsLoading } = useLoading();
-  const { setSubmitting } = useState(false);
+  const [error, setError] = useState(null);
+  const { setIsLoading } = useLoading();
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
 
@@ -85,20 +84,24 @@ const ApplyPage = () => {
     reset,
   } = methods;
 
-  useEffect(() => {
-    const fetchJob = async () => {
-      setIsLoading(true);
-      try {
-        const res = await API.get(`/jobs/${jobId}`);
-        setJob(res.data);
-      } catch (err) {
-        console.error("Failed to fetch job details", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchJob();
-  }, [jobId]);
+useEffect(() => {
+  const fetchJob = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await API.get(`/jobs/${jobId}`);
+      setJob(res.data);
+    } catch (err) {
+      console.error("Failed to fetch job details", err);
+      setError("Job not found or no longer accepting applications.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchJob();
+}, [jobId]);
 
   useEffect(() => {
     const fetchDraft = async () => {
@@ -268,7 +271,6 @@ const ApplyPage = () => {
       otherFiles: (data.other || []).map((file) => file.url),
     };
 
-    setSubmitting(true);
     try {
       const res = await API.post("applications/submit", payload);
       toast.success("Application submitted successfully!", res);
@@ -279,9 +281,7 @@ const ApplyPage = () => {
     } catch (err) {
       console.error("❌ Failed to submit application", err);
       toast.error("Error submitting application.");
-    } finally {
-      setSubmitting(false);
-    }
+    } 
   };
 
   useEffect(() => {
@@ -308,15 +308,14 @@ const ApplyPage = () => {
         return null;
     }
   };
-  console.log(isLoading);
-  console.log(job);
-  if (!isLoading && !job) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold">
-        Job not found or no longer accepting applications.
-      </div>
-    );
-  }
+
+  if (!job && error) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold">
+      {error}
+    </div>
+  );
+}
 
   return (
     <div className="relative min-h-screen bg-gray-50">

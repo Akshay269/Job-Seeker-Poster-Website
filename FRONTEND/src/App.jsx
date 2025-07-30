@@ -19,6 +19,7 @@ import useAuthStore from "./store/authStore";
 import { useLoading } from "./context/LoadingContext";
 import Spinner from "./components/Spinner"
 import JobDetailsPage from "./pages/JobDetailsPage";
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 const App = () => {
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/signin" element={<Login />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/verify" element={<VerifyPage />} />
+          <Route path="/forgotpassword" element={<ForgotPassword/>}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/jobs" element={<Jobs />} />

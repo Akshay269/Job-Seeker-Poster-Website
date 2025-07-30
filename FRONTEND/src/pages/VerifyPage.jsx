@@ -43,7 +43,7 @@ const Verify = () => {
         email: state.email,
         otp: data.otp.trim(),
       });
-      toast.success("Account verified successfully!");
+      toast.success("Account verified successfully! Please SignIn");
       setTimeout(() => {
         navigate("/signin");
       }, 500);
@@ -63,7 +63,7 @@ const Verify = () => {
         role: state.role,
       });
       toast.success("OTP resent successfully!");
-      setResendTimer(60); // Disable button for 60 seconds
+      setResendTimer(60); 
     } catch {
       toast.error("Failed to resend OTP");
     } finally {
@@ -105,7 +105,7 @@ const Verify = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold transition-all duration-200"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer"
           >
             Verify
           </button>
@@ -115,7 +115,7 @@ const Verify = () => {
           <button
             onClick={handleResendOTP}
             disabled={resendTimer > 0 || resendLoading}
-            className={`text-sm font-medium ${
+            className={`text-sm font-medium cursor-pointer ${
               resendTimer > 0 || resendLoading
                 ? "text-gray-400 cursor-not-allowed"
                 : "text-purple-600 hover:underline"
