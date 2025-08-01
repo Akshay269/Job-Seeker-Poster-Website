@@ -183,7 +183,7 @@ const ApplicationsView = () => {
                       className="text-purple-600 hover:text-purple-800 transition"
                       onClick={() => setSelectedApp(app)}
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 cursor-pointer" />
                     </button>
                   </td>
                 </tr>

@@ -3,11 +3,13 @@ import JobCard from "../components/JobCard";
 import SidebarFilters from "../components/SideBarFilters";
 import API from "../api/axios";
 import { Link } from "react-router-dom";
-import {useLoading} from "../context/LoadingContext";
+import { SkeletonJobCard } from "../components/ShimmerJobCard";
+// import {useLoading} from "../context/LoadingContext";
 
 const Dashboard = () => {
   const [jobs, setJobs] = useState([]);
-  const { setIsLoading } = useLoading();
+  // const {} setIsLoading } = useLoading();
+  const [isloading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
@@ -18,7 +20,7 @@ const Dashboard = () => {
       } catch (err) {
         console.error("Failed to fetch admin jobs", err);
       } finally {
-        setIsLoading(false);
+        setTimeout(() => setIsLoading(false), 1000);
       }
     };
 
@@ -27,8 +29,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-pink-900 text-white">
-      
-
       <div className="px-4 py-8 max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
         <div className="md:col-span-1">
           <SidebarFilters />
@@ -48,7 +48,11 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.length === 0 && !setIsLoading ? (
+            {isloading ? (
+              Array.from({ length: 10 }).map((_, idx) => (
+                <SkeletonJobCard key={idx} />
+              ))
+            ) : jobs.length === 0 ? (
               <p className="text-gray-300 col-span-full text-center">
                 No jobs posted yet.
               </p>

@@ -103,6 +103,8 @@ useEffect(() => {
   fetchJob();
 }, [jobId]);
 
+const title=job?.title;
+
   useEffect(() => {
     const fetchDraft = async () => {
       if (!user?.id || !jobId) return;
@@ -237,10 +239,12 @@ useEffect(() => {
   };
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
     if (hasSubmitted) return;
 
     const payload = {
       jobId,
+      title,
       applicantId: user?.id,
       personalInfo: {
         fullName: `${data.personalInfo.firstName} ${data.personalInfo.lastName}`,
@@ -282,6 +286,9 @@ useEffect(() => {
       console.error("❌ Failed to submit application", err);
       toast.error("Error submitting application.");
     } 
+    finally{
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

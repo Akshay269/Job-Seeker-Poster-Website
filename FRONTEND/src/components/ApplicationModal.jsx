@@ -147,13 +147,13 @@ const ApplicationModal = ({ application, onClose, onStatusChange }) => {
         <div className="mt-6 flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded border text-sm"
+            className="px-4 py-2 rounded border text-sm cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleStatusUpdate}
-            className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+            className="px-4 py-2 bg-blue-600 text-white rounded text-sm cursor-pointer"
           >
             Update Status
           </button>

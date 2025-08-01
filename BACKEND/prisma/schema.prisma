@@ -26,6 +26,7 @@ model User {
 
 model Job {
   id              String         @id @default(uuid())
+  companyIcon     String?
   title           String
   companyName     String?
   location        String

@@ -102,6 +102,7 @@ exports.submitApplication = async (req, res) => {
   try {
     const {
       jobId,
+      title,
       applicantId,
       personalInfo,
       contactInfo,
@@ -136,7 +137,7 @@ exports.submitApplication = async (req, res) => {
 
     await sendEmail({
       to: contactInfo?.email,
-      subject: `Application for ${newApplication.jobTitle} Submitted Successfully!`,
+      subject: `Application for ${title} Submitted Successfully!`,
       html: appSubmitEmailTemplate({
         fullName: personalInfo.fullName || "Candidate",
         jobTitle: newApplication.jobTitle || "the position",

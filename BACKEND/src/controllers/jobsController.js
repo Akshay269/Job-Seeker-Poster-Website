@@ -81,6 +81,7 @@ exports.postJob = async (req, res) => {
     contactEmail,
     companyWebsite,
     deadline,
+    companyIcon
   } = req.body;
   // console.log("user", req.user);
   const userId = req.user.userId;
@@ -91,6 +92,7 @@ exports.postJob = async (req, res) => {
         title,
         companyName,
         location,
+        companyIcon,
         salaryRange,
         jobType,
         workType,

@@ -11,6 +11,8 @@ const getUploadSignature = async () => {
   return await res.data;
 };
 
+
+
 const uploadToCloudinary = async (file) => {
   const { timestamp, signature, apiKey, folder } = await getUploadSignature();
   const formData = new FormData();
@@ -21,7 +23,6 @@ const uploadToCloudinary = async (file) => {
   formData.append("signature", signature);
   formData.append("folder", folder);
 
-  // Infer resource_type based on file MIME type
   const isImageOrPdf = file.type.startsWith("image/") || file.type === "application/pdf";
   const resourceType = isImageOrPdf ? "image" : "raw";
 
@@ -202,11 +203,11 @@ const DocumentsForm = () => {
         />
       </div>
 
-      <FileUploadBox
+      {/* <FileUploadBox
         label="Portfolio"
         field="portfolio"
         accept=".pdf,.doc,.docx,.zip"
-      />
+      /> */}
 
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
         <div className="text-center space-y-2 mb-4">
