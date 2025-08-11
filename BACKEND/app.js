@@ -7,9 +7,10 @@ const cloudRoutes=require('./src/routes/cloudRoutes');
 const draftRoutes=require('./src/routes/draftRoutes');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
-
+// await initGoogleAuth();
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs',jobRoutes);
 app.use('/api/applications',appRoutes);

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLoading } from "../context/LoadingContext";
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import API from "../api/axios";
 import ApplicationModal from "../components/ApplicationModal";
+import InterviewSchedulePopup from "../components/InterviewSheduleForm";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -36,7 +36,8 @@ const ApplicationsView = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const { setIsLoading } = useLoading();
+  const { isLoading, setIsLoading } = useLoading();
+  const [showInterviewForm, setShowInterviewForm] = useState(false);
 
   const fetchApplications = async () => {
     setIsLoading(true);
@@ -60,16 +61,39 @@ const ApplicationsView = () => {
       app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleStatusUpdate = async (id, newStatus) => {
+  const handleStatusUpdate = async (applicationId, newStatus) => {
+    if (newStatus === "INTERVIEW_SCHEDULED") {
+      const appData = applications.find((a) => a.id === applicationId);
+      setSelectedApp(appData);
+      setShowInterviewForm(true);
+      return;
+    }
     setIsLoading(true);
     try {
-      await API.patch(`/applications/${id}/status`, { status: newStatus });
-      fetchApplications();
+      await API.patch(`/applications/${applicationId}/status`, {
+        status: newStatus,
+      });
+      await fetchApplications();
       setSelectedApp(null);
     } catch (err) {
       console.error("Error updating status", err);
+    } finally {
+      setIsLoading(false);
     }
-    finally{
+  };
+  const handleInterviewSubmit = async (formData) => {
+    setIsLoading(true);
+    try {
+      await API.post(
+        `/applications/${selectedApp.id}/schedule-interview`,
+        formData
+      );
+      await fetchApplications();
+      setShowInterviewForm(false);
+      setSelectedApp(null);
+    } catch (err) {
+      console.error("Error scheduling interview", err);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -116,79 +140,110 @@ const ApplicationsView = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredApps.map((app) => (
-                <tr key={app.id} className="border-b hover:bg-purple-50/30">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-purple-700" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">
-                          {app.applicant?.name || "N/A"}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {app.experiences?.[0]?.jobTitle || "-"}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 space-y-1 text-sm">
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Mail className="w-3 h-3" />
-                      {app.applicant?.email || "-"}
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Phone className="w-3 h-3" />
-                      {app.contactInfo?.phone || "-"}
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <MapPin className="w-3 h-3" />
-                      {`${app.contactInfo?.city || "-"}, ${app.contactInfo?.country || ""}`}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <p>{app.experiences?.[0]?.jobTitle || "-"}</p>
-                    <p className="text-xs text-gray-500">
-                      {app.educations?.[0]?.degree || "-"}
-                    </p>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {(app.skills || []).slice(0, 3).map((skill, idx) => (
-                        <span
-                          key={`${skill.name}-${idx}`}
-                          className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-md"
+              {filteredApps.map((app) => {
+                const isRejected = app.status === "REJECTED";
+                return (
+                  <tr
+                    key={app.id}
+                    className={`border-b ${
+                      isRejected
+                        ? "pointer-events-none"
+                        : "hover:bg-purple-50/30"
+                    }`}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isRejected ? "bg-red-100" : "bg-purple-100"
+                          }`}
                         >
-                          {skill.name}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(
-                        app.status
-                      )}`}
-                    >
-                      {app.status.replaceAll("_", " ")}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(app.appliedAt).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button
-                      className="text-purple-600 hover:text-purple-800 transition"
-                      onClick={() => setSelectedApp(app)}
-                    >
-                      <Eye className="w-4 h-4 cursor-pointer" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {!setIsLoading && filteredApps.length === 0 && (
+                          <User
+                            className={`w-4 h-4 ${
+                              isRejected ? "text-red-700" : "text-purple-700"
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <p className="font-semibold">
+                            {app.applicant?.name || "N/A"}
+                          </p>
+                          <p className="text-xs">
+                            {app.experiences?.[0]?.jobTitle || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 space-y-1 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Mail className="w-3 h-3" />
+                        {app.applicant?.email || "-"}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Phone className="w-3 h-3" />
+                        {app.contactInfo?.phone || "-"}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {`${app.contactInfo?.city || "-"}, ${
+                          app.contactInfo?.country || ""
+                        }`}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 text-sm">
+                      <p>{app.experiences?.[0]?.jobTitle || "-"}</p>
+                      <p className="text-xs">
+                        {app.educations?.[0]?.degree || "-"}
+                      </p>
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {(app.skills || []).slice(0, 3).map((skill, idx) => (
+                          <span
+                            key={`${skill.name}-${idx}`}
+                            className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-md"
+                          >
+                            {skill.name}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(
+                          app.status
+                        )}`}
+                      >
+                        {app.status.replaceAll("_", " ")}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1 text-sm">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(app.appliedAt).toLocaleDateString()}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <button
+                        className={`transition ${
+                          isRejected
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-purple-600 hover:text-purple-800"
+                        }`}
+                        disabled={isRejected}
+                        onClick={() => !isRejected && setSelectedApp(app)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {!isLoading && filteredApps.length === 0 && (
                 <tr>
                   <td
                     colSpan="6"
@@ -202,11 +257,21 @@ const ApplicationsView = () => {
           </table>
         </div>
 
-        {selectedApp && (
+        {selectedApp && !showInterviewForm && (
           <ApplicationModal
             application={selectedApp}
             onClose={() => setSelectedApp(null)}
             onStatusChange={handleStatusUpdate}
+          />
+        )}
+
+        {selectedApp && showInterviewForm && (
+          <InterviewSchedulePopup
+            onClose={() => {
+              setShowInterviewForm(false);
+              setSelectedApp(null);
+            }}
+            onSubmit={handleInterviewSubmit}
           />
         )}
       </div>

@@ -1,9 +1,13 @@
-const { PrismaClient, ApplicationStatus } = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const sendEmail = require("../utils/sendEmail");
 const appSubmitEmailTemplate = require("../utils/emailTemplates/appSubmitEmailTemplate");
+const statusUpdateEmailTemplate = require("../utils/emailTemplates/statusUpdateEmailTemplate");
+const interviewScheduledEmailTemplate = require("../utils/emailTemplates/interviewScheduledEmailTemplate");
+const { createGoogleMeet } = require("../utils/googleMeet");
 
 exports.getApplicationsbyId = async (req, res) => {
+  //poster side
   const { jobId } = req.params;
 
   try {
@@ -37,7 +41,9 @@ exports.getApplicationsbyId = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
 exports.getApplicationsByUser = async (req, res) => {
+  //user side
   const { userId } = req.params;
 
   try {
@@ -49,6 +55,10 @@ exports.getApplicationsByUser = async (req, res) => {
         id: true,
         status: true,
         appliedAt: true,
+        resume: true,
+        skills: true,
+        coverLetter: true,
+        portfolio: true,
         job: {
           select: {
             id: true,
@@ -68,33 +78,117 @@ exports.getApplicationsByUser = async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch user applications" });
   }
 };
+
 exports.updateApplicationStatus = async (req, res) => {
   const { applicationId } = req.params;
   const { status } = req.body;
 
-  const allowedStatuses = {
-    "Pending Review": ApplicationStatus.PENDING_REVIEW,
-    Shortlisted: ApplicationStatus.SHORTLISTED,
-    "Interview Scheduled": ApplicationStatus.INTERVIEW_SCHEDULED,
-    Rejected: ApplicationStatus.REJECTED,
-  };
-
-  const prismaStatus = allowedStatuses[status];
-
-  if (!prismaStatus) {
+  if (!status) {
     return res.status(400).json({ error: "Invalid status value" });
   }
 
   try {
-    const updated = await prisma.application.update({
+    const updatedApplication = await prisma.application.update({
       where: { id: applicationId },
-      data: { status: prismaStatus },
+      data: { status: status },
+      include: {
+        applicant: { select: { name: true, email: true } },
+        job: { select: { title: true } },
+      },
     });
 
-    return res.json(updated);
+    // Email notification
+    await sendEmail({
+      to: updatedApplication.applicant.email,
+      subject: `Update on Your Application for ${updatedApplication.job.title}`,
+      html: statusUpdateEmailTemplate({
+        fullName: updatedApplication.applicant.name || "Candidate",
+        jobTitle: updatedApplication.job.title,
+        status,
+      }),
+    });
+
+    return res.json({
+      success: true,
+      message: "Status updated and email sent",
+    });
   } catch (err) {
     console.error("Error updating status:", err);
     return res.status(500).json({ error: "Failed to update status" });
+  }
+};
+
+exports.scheduleInterview = async (req, res) => {
+  const { applicationId } = req.params;
+  const { date, time } = req.body;
+
+  if (!date || !time) {
+    return res.status(400).json({ error: "Interview date and time are required" });
+  }
+
+  try {
+    const application = await prisma.application.findUnique({
+      where: { id: applicationId },
+      include: {
+        applicant: { select: { name: true, email: true } },
+        job: { select: { title: true } },
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    const startTime = new Date(`${date}T${time}`);
+    const endTime = new Date(startTime.getTime() + 60 * 60000);
+
+    const meetingLink = await createGoogleMeet({
+      summary: `Interview for ${application.job.title}`,
+      description: `Interview with ${application.applicant.name}`,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      attendees: [application.applicant.email, req.user.email],
+    });
+
+    const updatedApplication = await prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: "INTERVIEW_SCHEDULED",
+        interviewDate: date,
+        interviewTime: time,
+        meetingLink,
+      },
+    });
+
+    await sendEmail({
+      to: application.applicant.email,
+      subject: `Interview Scheduled for ${application.job.title}`,
+      html: interviewScheduledEmailTemplate({
+        fullName: application.applicant.name || "Candidate",
+        jobTitle: application.job.title,
+        interviewDate: date,
+        interviewTime: time,
+        meetingLink,
+      }),
+    });
+
+    await sendEmail({
+      to: req.user.email,
+      subject: `Interview Scheduled with ${application.applicant.name}`,
+      html: `<p>You have scheduled an interview for <b>${application.job.title}</b> with ${application.applicant.name}.</p>
+             <p>Date: ${date}</p>
+             <p>Time: ${time}</p>
+             <p>Meeting Link: <a href="${meetingLink}">${meetingLink}</a></p>`,
+    });
+
+    res.json({
+      success: true,
+      message: "Interview scheduled and emails sent",
+      data: updatedApplication,
+    });
+  } catch (err) {
+    console.error("Error scheduling interview:", err);
+    res.status(500).json({ error: "Failed to schedule interview" });
   }
 };
 

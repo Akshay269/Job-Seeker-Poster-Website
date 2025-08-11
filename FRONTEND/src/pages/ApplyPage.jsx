@@ -27,6 +27,7 @@ const ApplyPage = () => {
   const { user } = useAuthStore();
 
   const methods = useForm({
+    mode: "onChange",
     defaultValues: {
       personalInfo: {
         firstName: "",

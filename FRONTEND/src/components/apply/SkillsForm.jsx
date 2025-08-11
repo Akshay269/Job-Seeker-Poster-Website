@@ -1,5 +1,6 @@
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Plus, Trash2, X } from "lucide-react";
+import { useEffect } from "react";
 
 const SkillsForm = () => {
   const {
@@ -29,22 +30,34 @@ const SkillsForm = () => {
 
   // Form values
   const skills = watch("skills");
-
+  useEffect(() => {
+    if (skillFields.length === 0) {
+      appendSkill({ name: "", level: "" });
+    }
+  }, []);
   return (
     <div className="space-y-10">
-
       <div>
         <h3 className="text-lg font-semibold mb-4">Technical Skills *</h3>
 
         {skillFields.map((field, index) => (
-          <div key={field.id} className="grid grid-cols-12 gap-4 mb-3 items-center">
+          <div
+            key={field.id}
+            className="grid grid-cols-12 gap-4 mb-3 items-center"
+          >
             <input
-              {...register(`skills.${index}.name`, { required: "Skill name is required" })}
+              {...register(`skills.${index}.name`, {
+                required:
+                  skillFields.length > 0 ? "Skill name is required" : false,
+              })}
               placeholder="Skill name (e.g., React)"
               className="col-span-5 border border-gray-300 rounded px-3 py-2"
             />
             <select
-              {...register(`skills.${index}.level`, { required: "Skill level is required" })}
+              {...register(`skills.${index}.level`, {
+                required:
+                  skillFields.length > 0 ? "Skill level is required" : false,
+              })}
               className="col-span-5 border border-gray-300 rounded px-3 py-2"
             >
               <option value="">Select level</option>
@@ -53,6 +66,7 @@ const SkillsForm = () => {
               <option value="advanced">Advanced</option>
               <option value="expert">Expert</option>
             </select>
+
             <button
               type="button"
               onClick={() => removeSkill(index)}
@@ -61,9 +75,11 @@ const SkillsForm = () => {
               <Trash2 className="w-5 h-5" />
             </button>
 
-            {(errors.skills?.[index]?.name || errors.skills?.[index]?.level) && (
+            {(errors.skills?.[index]?.name ||
+              errors.skills?.[index]?.level) && (
               <div className="col-span-12 text-red-500 text-sm">
-                {errors.skills?.[index]?.name?.message || errors.skills?.[index]?.level?.message}
+                {errors.skills?.[index]?.name?.message ||
+                  errors.skills?.[index]?.level?.message}
               </div>
             )}
           </div>
@@ -87,10 +103,15 @@ const SkillsForm = () => {
 
       {/* === Certifications === */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Certifications (Optional)</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Certifications (Optional)
+        </h3>
 
         {certFields.map((field, index) => (
-          <div key={field.id} className="grid grid-cols-12 gap-4 mb-3 items-center">
+          <div
+            key={field.id}
+            className="grid grid-cols-12 gap-4 mb-3 items-center"
+          >
             <input
               {...register(`certifications.${index}.name`)}
               placeholder="Certification Name"

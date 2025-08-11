@@ -1,112 +1,91 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import API from "../api/axios";
 import { Loader2Icon } from "lucide-react";
 import { useLoading } from "../context/LoadingContext";
 
 const JobDetails = () => {
-  const { id } = useParams();
-  const { isLoading, setIsLoading } = useLoading();
+  const { jobId } = useParams();
+  const { setIsLoading } = useLoading();
   const [job, setJob] = useState(null);
 
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        setIsLoading(true);
-        const res = await API.get(`/jobs/${id}`);
+        const res = await API.get(`/jobs/${jobId}`);
         setJob(res.data);
       } catch (err) {
-        console.error("Failed to fetch job", err);
+        console.error("Error fetching job", err);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchJob();
-  }, [id, setIsLoading]);
-
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-        <Loader2Icon className="w-10 h-10 animate-spin text-white" />
-      </div>
-    );
-  }
+  }, [jobId]);
 
   if (!job) {
     return <div className="text-center mt-10 text-white">Job not found</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 text-white">
-      <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-        {job.title}
-      </h1>
-      <p className="text-gray-300 mb-2">
-        <strong>Company:</strong> {job.companyName || "N/A"}
-      </p>
-      <p className="text-gray-300 mb-2">
-        <strong>Location:</strong> {job.location || "Remote"}
-      </p>
-      <p className="text-gray-300 mb-2">
-        <strong>Type:</strong> {job.type || "Full-time"}
-      </p>
-      {/* <p className="text-gray-300 mb-2">
-        <strong>Experience:</strong> {job.experienceLevel || "Not specified"}
-      </p> */}
-      <p className="text-gray-300 mb-2">
-        <strong>Salary:</strong> {job.salaryRange || "Not disclosed"}
-      </p>
-      <p className="text-gray-300 mb-6">
-        <strong>Deadline:</strong> {job.applicationDeadline || "Not set"}
-      </p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-pink-900 text-white px-4 py-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+         <h1 className="text-4xl leading-tight pb-1 font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-transparent bg-clip-text drop-shadow-lg">
+  {job.title}
+</h1>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-pink-400 mb-2">Description</h2>
-        <p className="text-gray-200 whitespace-pre-line">{job.description}</p>
-      </div>
-
-      {job.requirements && (
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-purple-400 mb-2">Requirements</h2>
-          <ul className="list-disc list-inside text-gray-200 space-y-1">
-            {job.requirements.split('\n').map((req, idx) => (
-              <li key={idx}>{req}</li>
-            ))}
-          </ul>
+          <Link
+            to="/dashboard"
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow hover:shadow-xl transition"
+          >
+            ← Back
+          </Link>
         </div>
-      )}
 
-      {job.skills && (
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-pink-400 mb-2">Required Skills</h2>
-          <div className="flex flex-wrap gap-2">
-            {job.skills.split(',').map((skill, idx) => (
-              <span
-                key={idx}
-                className="bg-purple-600 text-white text-sm px-3 py-1 rounded-full"
-              >
-                {skill.trim()}
-              </span>
-            ))}
+        {/* Job Info Card */}
+        <div className="bg-gray-900/60 backdrop-blur-lg p-6 rounded-2xl shadow-lg space-y-4">
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Location:</span>{" "}
+            {job.location}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Job Type:</span>{" "}
+            {job.jobType}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Experience:</span>{" "}
+            {job.experienceLevel}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Salary:</span>{" "}
+            {job.salary || "Not disclosed"}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Company:</span>{" "}
+            {job.companyName}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Category:</span>{" "}
+            {job.category}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Posted On:</span>{" "}
+            {new Date(job.createdAt).toLocaleDateString()}
+          </p>
+          <p className="text-gray-300">
+            <span className="font-semibold text-white">Last Updated:</span>{" "}
+            {new Date(job.updatedAt).toLocaleDateString()}
+          </p>
+
+          <div className="flex space-x-2">
+            <h2 className="font-semibold text-white mb-2">Description:</h2>
+            <p className="text-gray-300 whitespace-pre-line">
+              {job.description}
+            </p>
           </div>
         </div>
-      )}
-
-      {job.perks && (
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-purple-400 mb-2">Benefits & Perks</h2>
-          <p className="text-gray-200 whitespace-pre-line">{job.perks}</p>
-        </div>
-      )}
-
-      <div className="mt-6">
-        <a
-          href={`mailto:${job.contactEmail}`}
-          className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90 transition"
-        >
-          Apply Now
-        </a>
       </div>
     </div>
   );

@@ -95,7 +95,7 @@ const JobCard = ({ job, role, draft }) => {
         </div>
       </div>
 
-      {isApplicant && (
+      {(isApplicant || !role) && (
         <Link
           to={`/apply/${id}`}
           className="px-3 py-1 text-xs font-medium border border-gray-300 text-black rounded-md hover:bg-purple-100 transition"

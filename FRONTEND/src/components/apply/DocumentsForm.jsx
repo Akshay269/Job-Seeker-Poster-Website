@@ -141,7 +141,7 @@ const DocumentsForm = () => {
                     }
                   }}
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 cursor-pointer" />
                 </button>
               </div>
             ) : (
@@ -171,7 +171,7 @@ const DocumentsForm = () => {
                   onClick={() =>
                     document.getElementById(`file-${field}`)?.click()
                   }
-                  className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-100"
+                  className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-100 cursor-pointer"
                 >
                   Choose File
                 </button>
@@ -203,11 +203,6 @@ const DocumentsForm = () => {
         />
       </div>
 
-      {/* <FileUploadBox
-        label="Portfolio"
-        field="portfolio"
-        accept=".pdf,.doc,.docx,.zip"
-      /> */}
 
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
         <div className="text-center space-y-2 mb-4">
@@ -236,7 +231,7 @@ const DocumentsForm = () => {
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Files
-          </button>
+          </button> 
         </div>
 
         {other?.length > 0 && (

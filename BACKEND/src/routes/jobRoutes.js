@@ -5,7 +5,7 @@ const { getAllJobs, postJob,getPostedJobs,getJobDetails } = require('../controll
 const requireAuth=require('../middleware/authMiddleware');
 
 router.get("/postedjobs", requireAuth, getPostedJobs);
-router.get('/:jobId',getJobDetails);
+router.get('/:jobId',requireAuth,getJobDetails);
 router.post("/post-job", requireAuth, postJob);
 router.get('/', getAllJobs);
 

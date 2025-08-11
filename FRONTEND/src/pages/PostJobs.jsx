@@ -83,17 +83,17 @@ const PostJobs = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-   if (!logoUrlRef.current) {
-    toast.error("Please upload a company logo before submitting.");
-    setIsLoading(false);
-    return;
-  }
+    if (!logoUrlRef.current) {
+      toast.error("Please upload a company logo before submitting.");
+      setIsLoading(false);
+      return;
+    }
     try {
       const payload = {
         ...data,
         companyIcon: logoUrlRef.current,
       };
-      console.log("payload for submit",payload);
+      console.log("payload for submit", payload);
       const res = await API.post("/jobs/post-job", payload);
       toast.success(`Job "${res.data.title}" posted successfully!`);
       setTimeout(() => {
@@ -122,7 +122,7 @@ const PostJobs = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-1">
               🏢 Company Logo
             </h3>
-            <p className="text-gray-500 mb-3 text-sm">
+            <p className="text-gray-500 mb-3 text-sm cursor-pointer">
               Upload your company logo (image only)
             </p>
 
@@ -136,7 +136,7 @@ const PostJobs = () => {
                 <button
                   type="button"
                   onClick={removeLogo}
-                  className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-full"
+                  className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded cursor-pointer"
                 >
                   ✕
                 </button>
@@ -211,11 +211,47 @@ const PostJobs = () => {
                   Salary Range
                 </label>
                 <input
-                  {...register("salaryRange")}
+                  {...register("salaryRange", {
+                    required: "Salary range is required",
+                    validate: (value) => {
+                      const match = value.match(
+                        /^\$?(\d+(?:,\d+)?)(k|K)?(?:\s*-\s*\$?(\d+(?:,\d+)?)(k|K)?)?$/
+                      );
+
+                      if (!match) {
+                        return "Invalid format. Example: 50k - 100k or $80,000 - $120,000";
+                      }
+
+                      let min = parseInt(match[1].replace(/,/g, ""));
+                      let max = match[3]
+                        ? parseInt(match[3].replace(/,/g, ""))
+                        : null;
+
+                      // If "k" suffix is present, multiply by 1000
+                      if (match[2]) min *= 1000;
+                      if (max && match[4]) max *= 1000;
+
+                      if (max && min >= max) {
+                        return "Minimum salary must be less than maximum salary";
+                      }
+
+                      if (min <= 0 || (max && max <= 0)) {
+                        return "Salary must be positive";
+                      }
+
+                      return true;
+                    },
+                  })}
                   placeholder="e.g. $80,000 - $120,000"
                   className={input}
                 />
+                {errors.salaryRange && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.salaryRange.message}
+                  </p>
+                )}
               </div>
+
               <div>
                 <label className="block font-medium text-sm text-gray-700 mb-1">
                   Job Type *
@@ -374,11 +410,13 @@ const PostJobs = () => {
               </div>
               <div>
                 <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Application Deadline
+                  Application Deadline *
                 </label>
                 <input
                   type="date"
-                  {...register("deadline")}
+                  {...register("deadline", {
+                    required: "Deadline is required",
+                  })}
                   className={input}
                 />
               </div>

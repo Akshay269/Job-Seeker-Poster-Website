@@ -1,53 +1,95 @@
-import { ChevronLeft } from "lucide-react";
+import { useState, useEffect } from "react";
 
-export default function SidebarFilters() {
+const SidebarFilters = ({ onFilterChange }) => {
+  const [filters, setFilters] = useState({
+    title: "",
+    location: "",
+    jobType: "",
+    experienceLevel: "",
+  });
+
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+  // Handle change for inputs/selects
+  const handleChange = (e) => {
+    setFilters((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  // Reset filters
+  const clearFilters = () => {
+    setFilters({
+      title: "",
+      location: "",
+      jobType: "",
+      experienceLevel: "",
+    });
+  };
+
+  // Debounce effect (500ms delay)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [filters]);
+
+  // Notify parent when debounced filters change
+  useEffect(() => {
+    onFilterChange(debouncedFilters);
+  }, [debouncedFilters, onFilterChange]);
+
   return (
-    <aside className="w-full max-w-xs p-4 bg-white rounded-lg shadow-md space-y-6">
-
-      {/* Filter Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Filters</h3>
-          <ChevronLeft className="w-4 h-4" />
-        </div>
-
-        {/* Working Schedule */}
-        <div>
-          <h4 className="text-sm text-gray-500 mb-2">Working schedule</h4>
-          <div className="space-y-2 text-sm">
-            <FilterOption label="Full time" defaultChecked />
-            <FilterOption label="Part time" defaultChecked />
-            <FilterOption label="Internship" />
-            <FilterOption label="Project work" defaultChecked />
-            <FilterOption label="Volunteering" />
-          </div>
-        </div>
-
-        {/* Employment Type */}
-        <div>
-          <h4 className="text-sm text-gray-500 mb-2">Employment type</h4>
-          <div className="space-y-2 text-sm">
-            <FilterOption label="Full day" defaultChecked />
-            <FilterOption label="Flexible schedule" />
-            <FilterOption label="Shift work" />
-            <FilterOption label="Distant work" defaultChecked />
-            <FilterOption label="Shift method" />
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function FilterOption({ label, defaultChecked = false }) {
-  return (
-    <label className="flex items-center space-x-2 cursor-pointer">
+    <div className="space-y-4 bg-gray-900 p-4 rounded-lg shadow-md">
       <input
-        type="checkbox"
-        className="form-checkbox h-4 w-4 text-black rounded checked:bg-black"
-        defaultChecked={defaultChecked}
+        name="title"
+        placeholder="Search by title"
+        value={filters.title}
+        onChange={handleChange}
+        className="w-full p-2 rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
       />
-      <span>{label}</span>
-    </label>
+      <input
+        name="location"
+        placeholder="Location"
+        value={filters.location}
+        onChange={handleChange}
+        className="w-full p-2 rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+      <select
+        name="jobType"
+        value={filters.jobType}
+        onChange={handleChange}
+        className="w-full p-2 rounded bg-gray-800 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      >
+        <option value="">All Job Types</option>
+        <option value="Full-time">Full-time</option>
+        <option value="Part-time">Part-time</option>
+        <option value="Internship">Internship</option>
+        <option value="Contract">Contract</option>
+      </select>
+      <select
+        name="experienceLevel"
+        value={filters.experienceLevel}
+        onChange={handleChange}
+        className="w-full p-2 rounded bg-gray-800 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      >
+        <option value="">All Experience Levels</option>
+        <option value="Entry">Entry</option>
+        <option value="Mid">Mid</option>
+        <option value="Senior">Senior</option>
+      </select>
+
+      {/* Clear Filters Button */}
+      <button
+        onClick={clearFilters}
+        className="w-full py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded transition"
+      >
+        Clear Filters
+      </button>
+    </div>
   );
-}
+};
+
+export default SidebarFilters;

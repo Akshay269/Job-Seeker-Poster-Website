@@ -2,18 +2,43 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.getAllJobs = async (req, res) => {
-  const page=parseInt(req.query.page)||1;
-  const limit=parseInt(req.query.limit)||10;
-  const skip=(page-1)*limit;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // Extract filters from query params
+  const { title, location, jobType, experienceLevel } = req.query;
+
   try {
-    const totalJobs=await prisma.job.count();
+    // Build the filtering object dynamically
+    const filters = {
+      status: "ACTIVE",
+      ...(title && {
+        title: {
+          contains: title,
+          mode: "insensitive", // case-insensitive search
+        },
+      }),
+      ...(location && {
+        location: {
+          contains: location,
+          mode: "insensitive",
+        },
+      }),
+      ...(jobType && { jobType }), // exact match
+      ...(experienceLevel && { experienceLevel }), // exact match
+    };
+
+    // Count total jobs for pagination
+    const totalJobs = await prisma.job.count({
+      where: filters,
+    });
+
+    // Fetch filtered jobs
     const jobs = await prisma.job.findMany({
       skip,
-      take:limit,
-
-      where: {
-        status: "ACTIVE",
-      },
+      take: limit,
+      where: filters,
       include: {
         postedBy: true,
       },
@@ -22,48 +47,36 @@ exports.getAllJobs = async (req, res) => {
       },
     });
 
-     res.status(200).json({
+    res.status(200).json({
       jobs,
       totalJobs,
       currentPage: page,
       totalPages: Math.ceil(totalJobs / limit),
     });
   } catch (err) {
+    console.error("Error fetching jobs:", err);
     res.status(500).json({ message: "Failed to fetch jobs" });
   }
 };
 
-exports.getJobDetails = async (req, res) => {
-  const { jobId } = req.params;
 
+exports.getJobDetails = async (req, res) => {
   try {
+    const jobId = req.params.jobId;
     const job = await prisma.job.findUnique({
-      where: {
-        id: jobId,
-      },
-      include: {
-        postedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            companyName: true,
-          },
-        },
-      },
+      where: { id: jobId }
     });
 
     if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      return res.status(404).json({ error: "Job not found" });
     }
 
     res.status(200).json(job);
-  } catch (err) {
-    console.error("Failed to fetch job details:", err);
-    res.status(500).json({ message: "Failed to fetch job details" });
+  } catch (error) {
+    console.error("Error fetching job:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 exports.postJob = async (req, res) => {
   const {
@@ -81,7 +94,7 @@ exports.postJob = async (req, res) => {
     contactEmail,
     companyWebsite,
     deadline,
-    companyIcon
+    companyIcon,
   } = req.body;
   // console.log("user", req.user);
   const userId = req.user.userId;
@@ -117,7 +130,6 @@ exports.postJob = async (req, res) => {
 
 exports.getPostedJobs = async (req, res) => {
   try {
-    // console.log("postreq",req.user);
     const userId = req.user.userId;
     const userRole = req.user.role;
 
@@ -125,20 +137,37 @@ exports.getPostedJobs = async (req, res) => {
       return res.status(403).json({ error: "Access denied" });
     }
 
-    const jobs = await prisma.job.findMany({
-      where: {
-        postedById: userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        applications: true,
-      },
-    });
-    console.log(jobs);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 9;
+    const skip = (page - 1) * limit;
 
-    res.status(200).json(jobs);
+    // Filters
+    const { title, location, jobType, experienceLevel } = req.query;
+    const filters = {
+      postedById: userId,
+      ...(title && { title: { contains: title, mode: "insensitive" } }),
+      ...(location && {
+        location: { contains: location, mode: "insensitive" },
+      }),
+      ...(jobType && { jobType }),
+      ...(experienceLevel && { experienceLevel }),
+    };
+
+    const totalJobs = await prisma.job.count({ where: filters });
+
+    const jobs = await prisma.job.findMany({
+      where: filters,
+      orderBy: { createdAt: "desc" },
+      include: { applications: true },
+      skip,
+      take: limit,
+    });
+
+    res.status(200).json({
+      jobs,
+      totalPages: Math.ceil(totalJobs / limit),
+      currentPage: page,
+    });
   } catch (error) {
     console.error("Error fetching admin jobs:", error);
     res.status(500).json({ error: "Internal server error" });
