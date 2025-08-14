@@ -34,9 +34,7 @@ const { setIsLoading } = useLoading();
     }
   };
 
-  const navItems = [
-    { name: "About", href: "/about", icon: Info },
-  ];
+  const navItems = [];
   if (isLoggedIn && user?.role === "APPLICANT") {
     navItems.push({
       name: "Jobs",
@@ -96,6 +94,13 @@ const { setIsLoading } = useLoading();
 
               {!isLoggedIn ? (
                 <>
+                <RouterLink
+                    to="/about"
+                    className="flex items-center gap-2 text-gray-700 hover:text-purple-700"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>About Us</span>
+                  </RouterLink>
                   <RouterLink
                     to="/signin"
                     className="flex items-center gap-2 text-gray-700 hover:text-purple-700"

@@ -121,9 +121,14 @@ exports.updateApplicationStatus = async (req, res) => {
 exports.scheduleInterview = async (req, res) => {
   const { applicationId } = req.params;
   const { date, time } = req.body;
+  const combinedDateTime = new Date(`${date}T${time}:00+05:30`);
+
+  console.log(req.user);
 
   if (!date || !time) {
-    return res.status(400).json({ error: "Interview date and time are required" });
+    return res
+      .status(400)
+      .json({ error: "Interview date and time are required" });
   }
 
   try {
@@ -141,20 +146,32 @@ exports.scheduleInterview = async (req, res) => {
 
     const startTime = new Date(`${date}T${time}`);
     const endTime = new Date(startTime.getTime() + 60 * 60000);
+    const attendees = [];
+    if (application.applicant.email) {
+      attendees.push(application.applicant.email);
+    }
+
+    const admin = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { email: true },
+    });
+
+    if (admin?.email) attendees.push(admin.email);
+    // console.log(attendees);
 
     const meetingLink = await createGoogleMeet({
       summary: `Interview for ${application.job.title}`,
       description: `Interview with ${application.applicant.name}`,
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
-      attendees: [application.applicant.email, req.user.email],
+      attendees: attendees,
     });
 
     const updatedApplication = await prisma.application.update({
       where: { id: applicationId },
       data: {
         status: "INTERVIEW_SCHEDULED",
-        interviewDate: date,
+        interviewDate: combinedDateTime,
         interviewTime: time,
         meetingLink,
       },
@@ -173,7 +190,7 @@ exports.scheduleInterview = async (req, res) => {
     });
 
     await sendEmail({
-      to: req.user.email,
+      to: admin.email,
       subject: `Interview Scheduled with ${application.applicant.name}`,
       html: `<p>You have scheduled an interview for <b>${application.job.title}</b> with ${application.applicant.name}.</p>
              <p>Date: ${date}</p>

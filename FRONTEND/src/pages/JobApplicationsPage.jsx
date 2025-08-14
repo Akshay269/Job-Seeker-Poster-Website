@@ -14,6 +14,7 @@ import {
 import API from "../api/axios";
 import ApplicationModal from "../components/ApplicationModal";
 import InterviewSchedulePopup from "../components/InterviewSheduleForm";
+import { toast } from "react-hot-toast";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -91,6 +92,9 @@ const ApplicationsView = () => {
       await fetchApplications();
       setShowInterviewForm(false);
       setSelectedApp(null);
+      toast.success(
+        "Interview scheduled successfully! Please check your email for details."
+      );
     } catch (err) {
       console.error("Error scheduling interview", err);
     } finally {
@@ -227,17 +231,19 @@ const ApplicationsView = () => {
                     </td>
 
                     <td className="px-6 py-4">
-                      <button
-                        className={`transition ${
-                          isRejected
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-purple-600 hover:text-purple-800"
-                        }`}
-                        disabled={isRejected}
-                        onClick={() => !isRejected && setSelectedApp(app)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                      {app.status !== "INTERVIEW_SCHEDULED" && (
+                        <button
+                          className={`transition ${
+                            isRejected
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-purple-600 hover:text-purple-800"
+                          }`}
+                          disabled={isRejected}
+                          onClick={() => !isRejected && setSelectedApp(app)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
