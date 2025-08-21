@@ -102,7 +102,7 @@ const Footer = () => {
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-white" />
                 </div>
-                <span>San Francisco, CA</span>
+                <span>Nagpur, Maharashtra</span>
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ const Footer = () => {
         <div className="border-t border-gray-700/50 mt-5 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2 text-gray-400">
-              <span>© 2024 Anvaya. Made with</span>
+              <span>© 2025 Anvaya. Made with</span>
               <Heart className="w-4 h-4 text-pink-500 animate-pulse" />
               <span>for dreamers worldwide</span>
             </div>

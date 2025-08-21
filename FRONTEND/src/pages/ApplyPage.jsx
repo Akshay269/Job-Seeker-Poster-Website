@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useCallback,useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import API from "../api/axios";
@@ -14,19 +14,23 @@ import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
 import { useLoading } from "../context/LoadingContext";
 import { useNavigate } from "react-router-dom";
+import {useJob} from "../custom-hooks/useJob";
+import {useDraft} from "../custom-hooks/useDraft";
 
 const ApplyPage = () => {
   const { jobId } = useParams();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 7;
+
+  const { job, error } = useJob(jobId, setIsLoading);
+
   const navigate = useNavigate();
-  const [job, setJob] = useState(null);
-  const [error, setError] = useState(null);
   const { setIsLoading } = useLoading();
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
 
-  const methods = useForm({
+  
+ const methods = useForm({
     mode: "onChange",
     defaultValues: {
       personalInfo: {
@@ -76,6 +80,9 @@ const ApplyPage = () => {
       other: [],
     },
   });
+ 
+useDraft(user?.id, jobId, reset, setIsLoading,methods);
+
 
   const {
     handleSubmit,
@@ -85,96 +92,12 @@ const ApplyPage = () => {
     reset,
   } = methods;
 
-useEffect(() => {
-  const fetchJob = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const res = await API.get(`/jobs/${jobId}`);
-      setJob(res.data);
-    } catch (err) {
-      console.error("Failed to fetch job details", err);
-      setError("Job not found or no longer accepting applications.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  fetchJob();
-}, [jobId]);
 
 const title=job?.title;
 
-  useEffect(() => {
-    const fetchDraft = async () => {
-      if (!user?.id || !jobId) return;
+  
 
-      try {
-        const res = await API.get(`/drafts/${user.id}`);
-        const drafts = res.data;
-        const draft = drafts.find((d) => d.jobId === jobId);
-        if (draft?.data) {
-          const data = draft.data;
-          methods.reset({
-            personalInfo: {
-              firstName: data.personalInfo?.firstName || "",
-              lastName: data.personalInfo?.lastName || "",
-              dateOfBirth: data.personalInfo?.dateOfBirth || "",
-              gender: data.personalInfo?.gender || "",
-              summary: data.personalInfo?.summary || "",
-              nationality: data.personalInfo?.nationality || "",
-            },
-            contactInfo: {
-              email: data.contactInfo?.email || "",
-              phone: data.contactInfo?.phone || "",
-              address: data.contactInfo?.address || "",
-              city: data.contactInfo?.city || "",
-              state: data.contactInfo?.state || "",
-              zip: data.contactInfo?.zip || "",
-              linkedIn: data.contactInfo?.linkedIn || "",
-              portfolio: data.contactInfo?.portfolio || "",
-              country: data.contactInfo?.country || "",
-            },
-            experiences: data.experiences || [
-              {
-                jobTitle: "",
-                company: "",
-                startDate: "",
-                endDate: "",
-                isCurrent: false,
-                description: "",
-              },
-            ],
-            educations: data.educations || [
-              {
-                degree: "",
-                fieldOfStudy: "",
-                institution: "",
-                graduationYear: "",
-                gpa: "",
-              },
-            ],
-            skills: data.skills || [],
-            certifications: data.certifications || [],
-            languages: data.languages?.map((l) => ({ name: l })) || [],
-            resume: data.resume ? { url: data.resume } : null,
-            coverLetter: data.coverLetter ? { url: data.coverLetter } : null,
-            portfolio: data.portfolio ? { url: data.portfolio } : null,
-            other: (data.otherFiles || []).map((url) => ({ url })),
-          });
-          toast.success("Draft loaded SuccessFully");
-        }
-      } catch (err) {
-        console.error("Failed to fetch draft", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchDraft();
-  }, [user?.id, jobId, reset]);
-
-  const stepTitles = [
+  const stepTitles = useMemo(()=>[
     "Personal Information",
     "Contact Details",
     "Work Experience",
@@ -182,22 +105,23 @@ const title=job?.title;
     "Skills & Certifications",
     "Documents",
     "Review & Submit",
-  ];
+  ], []);
 
-  const progress = (currentStep / totalSteps) * 100;
+  const progress = useMemo(()=>(currentStep / totalSteps) * 100, [currentStep, totalSteps]);
 
-  const nextStep = async () => {
+  const nextStep = useCallback(async () => {
     const isValid = await trigger();
     if (isValid && currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
     }
-  };
+  }, [currentStep, totalSteps, trigger]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
     }
-  };
+  }, [currentStep]);
+  ;
 
   const buildDraftPayload = (data, step) => {
     const draft = {
