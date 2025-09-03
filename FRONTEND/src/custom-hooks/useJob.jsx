@@ -11,7 +11,7 @@ export const useJob = (jobId, setIsLoading) => {
     const fetchJob = async () => {
       setIsLoading(true);
       try {
-        const res = await API.get(`${APIURL}jobs/${jobId}`);
+        const res = await API.get(`${APIURL}/jobs/${jobId}`);
         setJob(res.data);
       } catch {
         setError("Job not found or no longer accepting applications.");

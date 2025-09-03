@@ -43,7 +43,7 @@ const ApplicationsView = () => {
 
   const fetchApplications = async () => {
     try {
-      const res = await API.get(`${APIURL}applications/${jobId}`);
+      const res = await API.get(`${APIURL}/applications/${jobId}`);
       setApplications(res.data);
     } catch (error) {
       console.error("Failed to fetch applications", error);
@@ -70,7 +70,7 @@ const ApplicationsView = () => {
       return;
     }
     try {
-      await API.patch(`${APIURL}applications/${applicationId}/status`, {
+      await API.patch(`${APIURL}/applications/${applicationId}/status`, {
         status: newStatus,
       });
       await fetchApplications();

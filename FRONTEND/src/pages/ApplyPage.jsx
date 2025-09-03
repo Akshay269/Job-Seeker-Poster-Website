@@ -153,7 +153,7 @@ const title=job?.title;
     const currentData = getValues();
     const draftPayload = buildDraftPayload(currentData, currentStep);
     try {
-      await API.put(`${APIURL}drafts/${user.id}/${jobId}`, draftPayload);
+      await API.put(`${APIURL}/drafts/${user.id}/${jobId}`, draftPayload);
       toast.success("Draft saved successfully");
       setTimeout(() => {
         navigate("/jobs");

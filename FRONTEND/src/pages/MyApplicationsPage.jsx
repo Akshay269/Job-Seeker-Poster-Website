@@ -21,7 +21,7 @@ const MyApplications = () => {
       
       if (!user?.id) return;
       try {
-        const res = await API.get(`${APIURL}applications/user/${user.id}`);
+        const res = await API.get(`${APIURL}/applications/user/${user.id}`);
         setApplications(res.data);
       } catch (err) {
         console.error("Failed to fetch applications", err);
