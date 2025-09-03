@@ -52,15 +52,12 @@ const PostJobs = () => {
   const fileInputRef = useRef(null);
 
   const handleLogoChange = async (e) => {
-    // console.log(e);
     const file = e.target.files[0];
     if (!file) return;
     try {
     
       const { url, publicId } = await uploadToCloudinary(file);
-      // console.log("url", url);
       setLogoUrl(url);
-      // console.log(logoUrl);
       setLogoPublicId(publicId);
       logoUrlRef.current = url;
       toast.success("Logo uploaded");
@@ -89,7 +86,6 @@ const PostJobs = () => {
         ...data,
         companyIcon: logoUrlRef.current,
       };
-      console.log("payload for submit", payload);
       const res = await API.post("/jobs/post-job", payload);
       toast.success(`Job "${res.data.title}" posted successfully!`);
       setTimeout(() => {
