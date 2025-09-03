@@ -22,7 +22,6 @@ const JobCard = ({ job, role, draft }) => {
     salaryRange,
     createdAt,
     requirements,
-    benefits,
     companyIcon
   } = job;
 
@@ -139,17 +138,6 @@ const JobCard = ({ job, role, draft }) => {
           <span>Requirements:</span>
         </div>
         <p className="text-sm text-black">{requirements}</p>
-      </div>
-    )}
-
-    {/* Benefits */}
-    {benefits && (
-      <div className="mb-1">
-        <div className="flex items-center gap-2 text-xs text-pink-600 font-medium">
-          <Gift className="w-4 h-4" />
-          <span>Benefits:</span>
-        </div>
-        <p className="text-sm text-black">{benefits}</p>
       </div>
     )}
 

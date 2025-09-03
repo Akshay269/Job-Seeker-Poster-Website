@@ -3,9 +3,10 @@ import { Upload, File, X, Plus } from "lucide-react";
 import { useRef } from "react";
 import API from "../../api/axios";
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const APIURL=import.meta.env.VITE_API_URL;
 
 const getUploadSignature = async () => {
-  const res = await API.get(`/cloudinary/signature`);
+  const res = await API.get(`${APIURL}/cloudinary/signature`);
   return await res.data;
 };
 
@@ -39,7 +40,7 @@ const uploadToCloudinary = async (file) => {
 };
 
 const deleteFromCloudinary = async (publicId) => {
-  await API.post(`/cloudinary/delete`, { publicId });
+  await API.post(`${APIURL}/cloudinary/delete`, { publicId });
 };
 
 const DocumentsForm = () => {

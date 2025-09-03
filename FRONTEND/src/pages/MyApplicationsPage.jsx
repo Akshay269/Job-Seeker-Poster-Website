@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { AnimatePresence } from "framer-motion";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
+const APIURL=import.meta.env.VITE_API_URL;
 
 const MyApplications = () => {
   const { user } = useAuthStore();
@@ -20,7 +21,7 @@ const MyApplications = () => {
       
       if (!user?.id) return;
       try {
-        const res = await API.get(`/applications/user/${user.id}`);
+        const res = await API.get(`${APIURL}applications/user/${user.id}`);
         setApplications(res.data);
       } catch (err) {
         console.error("Failed to fetch applications", err);

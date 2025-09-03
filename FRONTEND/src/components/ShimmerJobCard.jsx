@@ -24,12 +24,6 @@ export const SkeletonJobCard = () => {
         <div className="h-3 w-full bg-gray-100 rounded" />
       </div>
 
-      {/* Benefits */}
-      <div>
-        <div className="h-3 w-20 bg-gray-300 mb-1 rounded" />
-        <div className="h-3 w-full bg-gray-100 rounded" />
-      </div>
-
       {/* Timestamp */}
       <div className="h-3 w-32 bg-gray-200 rounded mt-2" />
     </div>

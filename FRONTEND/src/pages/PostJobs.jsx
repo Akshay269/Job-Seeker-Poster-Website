@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useState, useRef } from "react";
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const APIURL=import.meta.env.VITE_API_URL;
 
 const getUploadSignature = async () => {
-  const res = await API.get(`/cloudinary/signature`);
+  const res = await API.get(`${APIURL}cloudinary/signature`);
   return await res.data;
 };
 
@@ -35,7 +36,7 @@ const uploadToCloudinary = async (file) => {
 };
 
 const deleteFromCloudinary = async (publicId) => {
-  await API.post(`/cloudinary/delete`, { publicId });
+  await API.post(`${APIURL}cloudinary/delete`, { publicId });
 };
 const PostJobs = () => {
   const {
@@ -310,12 +311,12 @@ const PostJobs = () => {
                 <label className="block font-medium text-sm text-gray-700 mb-1">
                   Job Description *
                 </label>
-                <textarea
+                <input
                   {...register("description", {
                     required: "Description is required",
                   })}
                   placeholder="Describe the role..."
-                  className={textarea}
+                  className={input}
                 />
                 {errors.description && (
                   <ErrorMsg msg={errors.description.message} />
@@ -325,12 +326,12 @@ const PostJobs = () => {
                 <label className="block font-medium text-sm text-gray-700 mb-1">
                   Requirements *
                 </label>
-                <textarea
+                <input
                   {...register("requirements", {
                     required: "Requirements are required",
                   })}
                   placeholder="List the required qualifications..."
-                  className={textarea}
+                  className={input}
                 />
                 {errors.requirements && (
                   <ErrorMsg msg={errors.requirements.message} />
@@ -347,16 +348,7 @@ const PostJobs = () => {
                 />
                 {errors.skills && <ErrorMsg msg={errors.skills.message} />}
               </div>
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Benefits & Perks
-                </label>
-                <textarea
-                  {...register("benefits")}
-                  placeholder="Health insurance, flexible hours, etc..."
-                  className={textarea}
-                />
-              </div>
+
             </div>
           </div>
 
@@ -437,8 +429,6 @@ const PostJobs = () => {
 const input =
   "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base bg-white shadow-sm";
 
-const textarea =
-  "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base min-h-[120px] bg-white shadow-sm";
 
 const ErrorMsg = ({ msg }) => (
   <p className="text-sm text-red-500 mt-1">{msg}</p>

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import  API  from "../api/axios";
 import { toast } from "react-hot-toast";
+const APIURL=import.meta.env.VITE_API_URL;
 
 export const useDraft = (user, jobId, reset, setIsLoading, methods) => {
   useEffect(() => {
@@ -8,7 +9,7 @@ export const useDraft = (user, jobId, reset, setIsLoading, methods) => {
 
     const fetchDraft = async () => {
       try {
-        const res = await API.get(`/drafts/${user.id}`);
+        const res = await API.get(`${APIURL}/drafts/${user.id}`);
         const drafts = res.data;
         const draft = drafts.find((d) => d.jobId === jobId);
         if (draft?.data) {

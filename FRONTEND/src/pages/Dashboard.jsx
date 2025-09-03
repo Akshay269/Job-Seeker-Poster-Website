@@ -4,6 +4,7 @@ import SidebarFilters from "../components/SideBarFilters";
 import API from "../api/axios";
 import { Link } from "react-router-dom";
 import { SkeletonJobCard } from "../components/ShimmerJobCard";
+const APIURL=import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -22,7 +23,7 @@ const Dashboard = () => {
         ...filters,
       }).toString();
 
-      const res = await API.get(`/jobs/postedjobs?${params}`);
+      const res = await API.get(`${APIURL}jobs/postedjobs?${params}`);
       setJobs(res.data.jobs);
       setTotalPages(res.data.totalPages);
       setCurrentPage(res.data.currentPage);

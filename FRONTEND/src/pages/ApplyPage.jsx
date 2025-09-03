@@ -15,6 +15,7 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import {useJob} from "../custom-hooks/useJob";
 import {useDraft} from "../custom-hooks/useDraft";
+const APIURL=import.meta.env.VITE_API_URL;
 
 const ApplyPage = () => {
   const { jobId } = useParams();
@@ -152,7 +153,7 @@ const title=job?.title;
     const currentData = getValues();
     const draftPayload = buildDraftPayload(currentData, currentStep);
     try {
-      await API.put(`/drafts/${user.id}/${jobId}`, draftPayload);
+      await API.put(`${APIURL}drafts/${user.id}/${jobId}`, draftPayload);
       toast.success("Draft saved successfully");
       setTimeout(() => {
         navigate("/jobs");

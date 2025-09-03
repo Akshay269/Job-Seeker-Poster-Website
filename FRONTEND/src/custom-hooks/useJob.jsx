@@ -1,6 +1,7 @@
 
 import {useState,useEffect} from 'react';
 import API from '../api/axios';
+const APIURL=import.meta.env.VITE_API_URL;
 
 export const useJob = (jobId, setIsLoading) => {
   const [job, setJob] = useState(null);
@@ -10,7 +11,7 @@ export const useJob = (jobId, setIsLoading) => {
     const fetchJob = async () => {
       setIsLoading(true);
       try {
-        const res = await API.get(`/jobs/${jobId}`);
+        const res = await API.get(`${APIURL}jobs/${jobId}`);
         setJob(res.data);
       } catch {
         setError("Job not found or no longer accepting applications.");

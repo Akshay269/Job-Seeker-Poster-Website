@@ -37,7 +37,6 @@ model Job {
   description     String
   requirements    String?
   skills          String?
-  benefits        String?
   contactEmail    String?
   companyWebsite  String?
   deadline        DateTime?
