@@ -16,10 +16,10 @@ app.use(
 );
 app.use(express.json());
 // await initGoogleAuth();
-app.use("/api/auth", authRoutes);
-app.use("/api/jobs", jobRoutes);
-app.use("/api/applications", appRoutes);
-app.use("/api/cloudinary", cloudRoutes);
-app.use("/api/drafts", draftRoutes);
+app.use("/auth", authRoutes);
+app.use("/jobs", jobRoutes);
+app.use("/applications", appRoutes);
+app.use("/cloudinary", cloudRoutes);
+app.use("/drafts", draftRoutes);
 
 module.exports = app;
