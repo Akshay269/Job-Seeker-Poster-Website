@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { useLoading } from "../context/LoadingContext";
 import { toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
@@ -22,7 +21,6 @@ const Login = () => {
 
   const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
-  const {isLoading, setIsLoading } = useLoading();
 
   useEffect(() => {
     if (location.state?.role === "ADMIN") {
@@ -31,7 +29,7 @@ const Login = () => {
   }, [location.state]);
 
   const onSubmit = async (data) => {
-   setIsLoading(true);
+  
     try {
       const res = await API.post("/auth/login", { ...data, role });
       const { user, token } = res.data;
@@ -55,8 +53,6 @@ const Login = () => {
       else navigate("/signin");
     } catch (err) {
       toast.error(err?.response?.data?.message || "Login failed");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -190,7 +186,6 @@ const Login = () => {
 
               <button
                 type="submit"
-                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200 flex justify-center items-center cursor-pointer"
               >
               Sign in

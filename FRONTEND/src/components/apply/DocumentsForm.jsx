@@ -2,8 +2,6 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Upload, File, X, Plus } from "lucide-react";
 import { useRef } from "react";
 import API from "../../api/axios";
-import { useLoading } from "../../context/LoadingContext";
-
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
 const getUploadSignature = async () => {
@@ -51,7 +49,6 @@ const DocumentsForm = () => {
     watch,
     formState: { errors },
   } = useFormContext();
-  const { setIsLoading } = useLoading();
 
   const other = watch("other") || [];
   const otherFilesRef = useRef();
@@ -61,7 +58,6 @@ const DocumentsForm = () => {
     if (files.length === 0) return;
 
     try {
-      setIsLoading(true);
       const uploaded = await Promise.all(
         files.map(async (file) => {
           try {
@@ -78,8 +74,6 @@ const DocumentsForm = () => {
       });
     } catch (err) {
       console.error("File upload error:", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -130,15 +124,13 @@ const DocumentsForm = () => {
                   type="button"
                   className="text-gray-500 hover:text-red-600"
                   onClick={async () => {
-                    setIsLoading(true);
+                    
                     try {
                       await deleteFromCloudinary(value.publicId);
                       onChange(null);
                     } catch (err) {
                       console.error("Failed to delete", err);
-                    } finally {
-                      setIsLoading(false);
-                    }
+                    } 
                   }}
                 >
                   <X className="w-4 h-4 cursor-pointer" />
@@ -155,14 +147,12 @@ const DocumentsForm = () => {
                     const file = e.target.files?.[0];
                     if (!file) return;
 
-                    setIsLoading(true);
+                 
                     try {
                       const uploaded = await uploadToCloudinary(file);
                       onChange(uploaded);
                     } catch (err) {
                       console.error("Upload failed", err);
-                    } finally {
-                      setIsLoading(false);
                     }
                   }}
                 />

@@ -1,48 +1,37 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import Jobs from "./pages/Jobs";
-import Dashboard from "./pages/Dashboard";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import ApplyPage from "./pages/ApplyPage";
-import PostJobs from "./pages/PostJobs";
-import About from "./pages/About";
-import JobApplicationsPage from "./pages/JobApplicationsPage";
-import MyApplicationsPage from "./pages/MyApplicationsPage";
-import VerifyPage from "./pages/VerifyPage";
-import { useEffect} from "react";
-import useAuthStore from "./store/authStore";
-import { useLoading } from "./context/LoadingContext";
-import Spinner from "./components/Spinner"
-import JobDetailsPage from "./pages/JobDetailsPage";
-import ForgotPassword from "./pages/ForgotPassword";
+import { Suspense, lazy } from "react";
 
+// Lazy-loaded pages
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const About = lazy(() => import("./pages/About"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const ApplyPage = lazy(() => import("./pages/ApplyPage"));
+const MyApplicationsPage = lazy(() => import("./pages/MyApplicationsPage"));
+const PostJobs = lazy(() => import("./pages/PostJobs"));
+const JobApplicationsPage = lazy(() => import("./pages/JobApplicationsPage"));
+const JobDetailsPage = lazy(() => import("./pages/JobDetailsPage"));
+const VerifyPage = lazy(() => import("./pages/VerifyPage"));
 
 const App = () => {
- const { isLoading, setIsLoading } = useLoading();
-
-  useEffect(() => {
-    useAuthStore.getState().initializeAuth();
-    setTimeout(() => setIsLoading(false), 500); 
-  }, []);
-
   return (
-    <>
-      <Spinner isLoading={isLoading} />
-      <div className="font-sans">
-        <Toaster position="top-center" reverseOrder={false} />
-        <Navbar />
+    <div className="font-sans">
+      <Toaster position="top-center" reverseOrder={false} />
+      <Navbar />
 
+      {/* Suspense fallback */}
+      <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signin" element={<Login />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/verify" element={<VerifyPage />} />
-          <Route path="/forgotpassword" element={<ForgotPassword/>}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/jobs" element={<Jobs />} />
@@ -87,10 +76,10 @@ const App = () => {
             }
           />
         </Routes>
+      </Suspense>
 
-        <Footer />
-      </div>
-    </>
+      <Footer />
+    </div>
   );
 };
 

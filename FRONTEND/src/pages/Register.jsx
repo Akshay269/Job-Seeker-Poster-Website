@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
-import { useLoading } from "../context/LoadingContext";
 import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -21,10 +20,8 @@ const Register = () => {
   const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const { isLoading, setIsLoading } = useLoading();
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
     try {
       await API.post("/auth/register", { ...data, role });
       toast.success("Registration successful. Please login.");
@@ -40,9 +37,7 @@ const Register = () => {
       );
     } catch (err) {
       toast.error(err?.response?.data?.message || "Registration failed");
-    } finally {
-     setIsLoading(false);
-    }
+    } 
   };
 
   return (
@@ -271,7 +266,6 @@ const Register = () => {
 
               <button
                 type="submit"
-                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-xl font-semibold transition-all duration-200 cursor-pointer"
               >
               Register

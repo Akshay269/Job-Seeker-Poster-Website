@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useLoading } from "../context/LoadingContext";
 import API from "../api/axios";
 import { useState, useRef } from "react";
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -45,7 +44,6 @@ const PostJobs = () => {
     reset,
     formState: { errors },
   } = useForm();
-  const { setIsLoading } = useLoading();
   const navigate = useNavigate();
 
   const [logoUrl, setLogoUrl] = useState("");
@@ -58,7 +56,7 @@ const PostJobs = () => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      setIsLoading(true);
+    
       const { url, publicId } = await uploadToCloudinary(file);
       // console.log("url", url);
       setLogoUrl(url);
@@ -68,9 +66,7 @@ const PostJobs = () => {
       toast.success("Logo uploaded");
     } catch {
       toast.error("Logo upload failed");
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   const removeLogo = async () => {
@@ -82,10 +78,10 @@ const PostJobs = () => {
   };
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
+   
     if (!logoUrlRef.current) {
       toast.error("Please upload a company logo before submitting.");
-      setIsLoading(false);
+   
       return;
     }
     try {
@@ -101,9 +97,7 @@ const PostJobs = () => {
       }, 500);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to post job");
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   return (

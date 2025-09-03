@@ -1,6 +1,6 @@
 
 import {useState,useEffect} from 'react';
-import {API } from '../api/axios';
+import API from '../api/axios';
 
 export const useJob = (jobId, setIsLoading) => {
   const [job, setJob] = useState(null);

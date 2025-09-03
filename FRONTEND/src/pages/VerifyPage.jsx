@@ -3,12 +3,12 @@ import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { useLoading } from "../context/LoadingContext";
+
 
 const Verify = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { isLoading,setIsLoading } = useLoading();
+  
   const [resendLoading, setResendLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
@@ -37,7 +37,7 @@ const Verify = () => {
   }, [resendTimer]);
 
   const onSubmit = async (data) => {
-     setIsLoading(true);
+   
     try {
       await API.post("/auth/verify", {
         email: state.email,
@@ -50,9 +50,7 @@ const Verify = () => {
       
     } catch (err) {
       toast.error(err?.response?.data?.message || "Verification failed");
-    } finally {
-       setIsLoading(false);
-    }
+    } 
   };
 
   const handleResendOTP = async () => {
@@ -104,7 +102,7 @@ const Verify = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+        
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer"
           >
             Verify

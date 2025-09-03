@@ -4,7 +4,6 @@ import { FileText, LinkIcon } from "lucide-react";
 const ReviewForm = () => {
   const { getValues } = useFormContext();
   const values = getValues();
-  console.log("ReviewForm", values);
 
   const renderFileLink = (url, label) =>
     url ? (

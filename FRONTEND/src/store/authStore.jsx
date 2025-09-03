@@ -1,68 +1,31 @@
-import { create } from 'zustand';
-
-const SESSION_TIMEOUT = 6 * 60 * 60 * 1000; 
+import { create } from "zustand";
 
 const useAuthStore = create((set) => ({
-  user: null,
-  token: null,
-  isLoggedIn: false,
-  isVerified: false,
-  isInitialized: false,
-
-  // Load from localStorage 
-  initializeAuth: () => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    const storedToken = localStorage.getItem('token');
-    const loginTime = parseInt(localStorage.getItem('loginTime'), 10);
-
-    const isExpired = loginTime && Date.now() - loginTime > SESSION_TIMEOUT;
-
-    if (isExpired) {
-      // Session expired
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      localStorage.removeItem('loginTime');
-      set({
-        user: null,
-        token: null,
-        isLoggedIn: false,
-        isVerified: false,
-        isInitialized: true,
-      });
-    } else {
-      set({
-        user: storedUser || null,
-        token: storedToken || null,
-        isLoggedIn: !!storedToken,
-        isVerified: storedUser?.isVerified || false,
-        isInitialized: true,
-      });
-    }
-  },
+  user: JSON.parse(localStorage.getItem("user")) || null,
+  token: localStorage.getItem("token") || null,
+  isLoggedIn: !!localStorage.getItem("token"),
+  isVerified: JSON.parse(localStorage.getItem("user"))?.isVerified || false,
 
   setAuth: (user, token) => {
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('token', token);
-    localStorage.setItem('loginTime', Date.now().toString()); 
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
+
     set({
       user,
       token,
       isLoggedIn: true,
       isVerified: user?.isVerified || false,
-      isInitialized: true,
     });
   },
 
   logout: () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('loginTime');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     set({
       user: null,
       token: null,
       isLoggedIn: false,
       isVerified: false,
-      isInitialized: true,
     });
   },
 }));

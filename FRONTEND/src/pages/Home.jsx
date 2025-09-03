@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+
 import {
   Award,
   Search,
@@ -12,21 +12,14 @@ import JobCard from "../components/JobCard";
 import CompanyCard from "../components/CompanyCard";
 import Anvaya2 from "../assets/Anvaya2.png";
 import { useNavigate } from "react-router-dom";
-import { useLoading } from "../context/LoadingContext";
+
 
 
 const input =
   "w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black text-base";
 
 const Home = () => {
- const { setIsLoading } = useLoading();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const featuredJobs = [
     {

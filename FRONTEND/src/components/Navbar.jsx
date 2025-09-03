@@ -11,27 +11,22 @@ import {
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserTie } from "@fortawesome/free-solid-svg-icons";
-import { useLoading } from "../context/LoadingContext";
 import Anvaya2 from "../assets/Anvaya2.png";
 import { useState } from "react";
 
 const Navbar = () => {
-const { setIsLoading } = useLoading();
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-     setIsLoading(true);
     try {
       logout();
       toast.success("Logged out successfully");
       setTimeout(() => navigate("/"), 500);
     } catch {
       toast.error("Logout failed");
-    } finally {
-      setTimeout(() =>   setIsLoading(false), 500);
-    }
+    } 
   };
 
   const navItems = [];

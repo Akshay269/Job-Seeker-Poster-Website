@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import API from "../api/axios";
-import { Loader2Icon } from "lucide-react";
-import { useLoading } from "../context/LoadingContext";
+
 
 const JobDetails = () => {
   const { jobId } = useParams();
-  const { setIsLoading } = useLoading();
   const [job, setJob] = useState(null);
 
   useEffect(() => {
@@ -16,8 +14,6 @@ const JobDetails = () => {
         setJob(res.data);
       } catch (err) {
         console.error("Error fetching job", err);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchJob();

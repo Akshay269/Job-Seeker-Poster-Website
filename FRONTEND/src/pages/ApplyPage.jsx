@@ -12,7 +12,6 @@ import DocumentsForm from "../components/apply/DocumentsForm";
 import ReviewForm from "../components/apply/ReviewForm";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
-import { useLoading } from "../context/LoadingContext";
 import { useNavigate } from "react-router-dom";
 import {useJob} from "../custom-hooks/useJob";
 import {useDraft} from "../custom-hooks/useDraft";
@@ -22,10 +21,10 @@ const ApplyPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 7;
 
-  const { job, error } = useJob(jobId, setIsLoading);
+  const { job, error } = useJob(jobId);
 
   const navigate = useNavigate();
-  const { setIsLoading } = useLoading();
+
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { user } = useAuthStore();
 
@@ -81,7 +80,7 @@ const ApplyPage = () => {
     },
   });
  
-useDraft(user?.id, jobId, reset, setIsLoading,methods);
+useDraft(user?.id, jobId, reset,methods);
 
 
   const {
@@ -164,7 +163,6 @@ const title=job?.title;
   };
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
     if (hasSubmitted) return;
 
     const payload = {
@@ -207,13 +205,10 @@ const title=job?.title;
       setTimeout(() => {
         navigate("/jobs");
       }, 500);
-    } catch (err) {
-      console.error("❌ Failed to submit application", err);
+    } catch  {
       toast.error("Error submitting application.");
     } 
-    finally{
-      setIsLoading(false);
-    }
+  
   };
 
   useEffect(() => {

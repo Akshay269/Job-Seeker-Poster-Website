@@ -3,7 +3,6 @@ import { Search, Eye, Download } from "lucide-react";
 import { format } from "date-fns";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
-import { useLoading } from "../context/LoadingContext";
 import { toast } from "react-hot-toast";
 import { AnimatePresence } from "framer-motion";
 // eslint-disable-next-line no-unused-vars
@@ -14,12 +13,11 @@ const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const { setIsLoading } = useLoading();
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     const fetchApplications = async () => {
-      setIsLoading(true);
+      
       if (!user?.id) return;
       try {
         const res = await API.get(`/applications/user/${user.id}`);
@@ -27,8 +25,6 @@ const MyApplications = () => {
       } catch (err) {
         console.error("Failed to fetch applications", err);
         toast.error("Failed to fetch applications.");
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchApplications();
@@ -149,7 +145,7 @@ const MyApplications = () => {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && !setIsLoading && (
+              {filtered.length === 0 && (
                 <tr>
                   <td
                     colSpan={5}

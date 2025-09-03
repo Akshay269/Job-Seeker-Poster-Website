@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { API } from "../api/axios";
+import  API  from "../api/axios";
 import { toast } from "react-hot-toast";
 
 export const useDraft = (user, jobId, reset, setIsLoading, methods) => {

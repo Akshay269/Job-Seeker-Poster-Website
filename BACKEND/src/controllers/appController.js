@@ -7,7 +7,6 @@ const interviewScheduledEmailTemplate = require("../utils/emailTemplates/intervi
 const { createGoogleMeet } = require("../utils/googleMeet");
 
 exports.getApplicationsbyId = async (req, res) => {
-  //poster side
   const { jobId } = req.params;
 
   try {
@@ -15,20 +14,16 @@ exports.getApplicationsbyId = async (req, res) => {
       where: {
         jobId,
       },
-      include: {
-        applicant: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        job: {
-          select: {
-            title: true,
-            companyName: true,
-          },
-        },
+      select: {
+        resume:true,
+        status:true,
+        contactInfo:true,
+        educations:true,
+        personalInfo:true,
+        job: true,
+        skills:true,
+        experiences:true,
+        appliedAt:true
       },
       orderBy: {
         appliedAt: "desc",

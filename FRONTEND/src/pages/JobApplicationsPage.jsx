@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useLoading } from "../context/LoadingContext";
 import {
   ArrowLeft,
   Eye,
@@ -10,6 +9,7 @@ import {
   Calendar,
   User,
   Search,
+  Download,
 } from "lucide-react";
 import API from "../api/axios";
 import ApplicationModal from "../components/ApplicationModal";
@@ -37,18 +37,14 @@ const ApplicationsView = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const { isLoading, setIsLoading } = useLoading();
   const [showInterviewForm, setShowInterviewForm] = useState(false);
 
   const fetchApplications = async () => {
-    setIsLoading(true);
     try {
       const res = await API.get(`/applications/${jobId}`);
       setApplications(res.data);
     } catch (error) {
       console.error("Failed to fetch applications", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -58,8 +54,10 @@ const ApplicationsView = () => {
 
   const filteredApps = applications.filter(
     (app) =>
-      app.applicant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      app.personalInfo?.fullName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      app.personalInfo?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleStatusUpdate = async (applicationId, newStatus) => {
@@ -69,7 +67,6 @@ const ApplicationsView = () => {
       setShowInterviewForm(true);
       return;
     }
-    setIsLoading(true);
     try {
       await API.patch(`/applications/${applicationId}/status`, {
         status: newStatus,
@@ -78,12 +75,9 @@ const ApplicationsView = () => {
       setSelectedApp(null);
     } catch (err) {
       console.error("Error updating status", err);
-    } finally {
-      setIsLoading(false);
     }
   };
   const handleInterviewSubmit = async (formData) => {
-    setIsLoading(true);
     try {
       await API.post(
         `/applications/${selectedApp.id}/schedule-interview`,
@@ -97,8 +91,6 @@ const ApplicationsView = () => {
       );
     } catch (err) {
       console.error("Error scheduling interview", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -170,7 +162,7 @@ const ApplicationsView = () => {
                         </div>
                         <div>
                           <p className="font-semibold">
-                            {app.applicant?.name || "N/A"}
+                            {app.personalInfo?.fullName || "N/A"}
                           </p>
                           <p className="text-xs">
                             {app.experiences?.[0]?.jobTitle || "-"}
@@ -182,7 +174,7 @@ const ApplicationsView = () => {
                     <td className="px-6 py-4 space-y-1 text-sm">
                       <div className="flex items-center gap-1">
                         <Mail className="w-3 h-3" />
-                        {app.applicant?.email || "-"}
+                        {app.contactInfo?.email || "-"}
                       </div>
                       <div className="flex items-center gap-1">
                         <Phone className="w-3 h-3" />
@@ -232,24 +224,35 @@ const ApplicationsView = () => {
 
                     <td className="px-6 py-4">
                       {app.status !== "INTERVIEW_SCHEDULED" && (
-                        <button
-                          className={`transition ${
-                            isRejected
-                              ? "text-gray-400 cursor-not-allowed"
-                              : "text-purple-600 hover:text-purple-800"
-                          }`}
-                          disabled={isRejected}
-                          onClick={() => !isRejected && setSelectedApp(app)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <>
+                          {" "}
+                          <button
+                            className={`transition ${
+                              isRejected
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-purple-600 hover:text-purple-800"
+                            }`}
+                            disabled={isRejected}
+                            onClick={() => !isRejected && setSelectedApp(app)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <a
+                            href={app.resume}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-black"
+                          >
+                            <Download className="w-4 h-4 inline" />
+                          </a>
+                        </>
                       )}
                     </td>
                   </tr>
                 );
               })}
 
-              {!isLoading && filteredApps.length === 0 && (
+              {filteredApps.length === 0 && (
                 <tr>
                   <td
                     colSpan="6"

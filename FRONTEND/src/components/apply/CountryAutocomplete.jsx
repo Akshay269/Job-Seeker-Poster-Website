@@ -42,7 +42,7 @@ const CountryAutocomplete = ({ fieldPath = "country" }) => {
       try {
         const cached = localStorage.getItem("countryList");
         if (cached) {
-          setCountries(JSON.parse(cached));
+          setCountries(JSON.parse(cached)); //strigified data -> JSON data --> Parsing
           setLoading(false);
           return;
         }
