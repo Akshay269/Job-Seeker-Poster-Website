@@ -23,7 +23,7 @@ const Dashboard = () => {
         ...filters,
       }).toString();
 
-      const res = await API.get(`${APIURL}/jobs/postedjobs?${params}`);
+      const res = await API.get(`/jobs/postedjobs?${params}`);
       setJobs(res.data.jobs);
       setTotalPages(res.data.totalPages);
       setCurrentPage(res.data.currentPage);

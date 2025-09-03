@@ -16,7 +16,7 @@ import ApplicationModal from "../components/ApplicationModal";
 import InterviewSchedulePopup from "../components/InterviewSheduleForm";
 import { toast } from "react-hot-toast";
 
-const APIURL=import.meta.env.VITE_API_URL;
+
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -43,7 +43,7 @@ const ApplicationsView = () => {
 
   const fetchApplications = async () => {
     try {
-      const res = await API.get(`${APIURL}/applications/${jobId}`);
+      const res = await API.get(`/applications/${jobId}`);
       setApplications(res.data);
     } catch (error) {
       console.error("Failed to fetch applications", error);
@@ -70,7 +70,7 @@ const ApplicationsView = () => {
       return;
     }
     try {
-      await API.patch(`${APIURL}/applications/${applicationId}/status`, {
+      await API.patch(`/applications/${applicationId}/status`, {
         status: newStatus,
       });
       await fetchApplications();

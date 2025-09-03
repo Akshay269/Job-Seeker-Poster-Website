@@ -4,7 +4,7 @@ import SidebarFilters from "../components/SideBarFilters";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
 import { SkeletonJobCard } from "../components/ShimmerJobCard";
-const APIURL=import.meta.env.VITE_API_URL;
+
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -37,15 +37,15 @@ const Jobs = () => {
         }),
       });
 
-      const jobsRes = await API.get(`${APIURL}/jobs?${params.toString()}`);
+      const jobsRes = await API.get(`/jobs?${params.toString()}`);
       let jobsList = jobsRes.data.jobs;
       setTotalPages(jobsRes.data.totalPages);
 
       if (user?.id) {
-        const draftsRes = await API.get(`${APIURL}/drafts/${user.id}`);
+        const draftsRes = await API.get(`/drafts/${user.id}`);
         const userDraftsList = draftsRes.data;
 
-        const submittedAppsRes = await API.get(`${APIURL}/applications/user/${user.id}`);
+        const submittedAppsRes = await API.get(`/applications/user/${user.id}`);
         const submittedJobIds = new Set(
           submittedAppsRes.data.map((app) => app.job.id)
         );

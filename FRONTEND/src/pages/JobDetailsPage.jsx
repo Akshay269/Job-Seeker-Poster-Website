@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import API from "../api/axios";
-const APIURL=import.meta.env.VITE_API_URL;
+
 
 
 const JobDetails = () => {
@@ -11,7 +11,7 @@ const JobDetails = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await API.get(`${APIURL}/jobs/${jobId}`);
+        const res = await API.get(`/jobs/${jobId}`);
         setJob(res.data);
       } catch (err) {
         console.error("Error fetching job", err);
