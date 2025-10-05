@@ -4,6 +4,8 @@ import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Suspense, lazy } from "react";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPasswordPage from "./pages/ResetPassword";
 
 // Lazy-loaded pages
 const Home = lazy(() => import("./pages/Home"));
@@ -35,6 +37,8 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/forgot-password" element={<ForgotPassword/>}/>
+           <Route path="/reset-password/:token" element={<ResetPasswordPage/>}/>
           <Route
             path="/apply/:jobId"
             element={

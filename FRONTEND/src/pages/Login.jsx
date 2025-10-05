@@ -1,11 +1,11 @@
 import { useForm } from "react-hook-form";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { useEffect, useState } from "react";
-import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
-import seekerImage from "../assets/jobseeker.jpg";
+import { useState } from "react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+
 import employerImage from "../assets/employer.jpg";
 
 const Login = () => {
@@ -13,25 +13,18 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onChange",
+  });
 
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    if (location.state?.role === "ADMIN") {
-      setRole("ADMIN");
-    }
-  }, [location.state]);
-
   const onSubmit = async (data) => {
-  
     try {
-      const res = await API.post("/auth/login", { ...data, role });
+      const res = await API.post("/auth/login", data);
       const { user, token } = res.data;
 
       if (!user.isVerified) {
@@ -39,7 +32,6 @@ const Login = () => {
         navigate("/verify", {
           state: {
             email: user.email,
-            role: user.role,
           },
         });
         return;
@@ -48,9 +40,7 @@ const Login = () => {
       setAuth(user, token);
       toast.success(`Welcome back, ${user.name || user.email}`);
 
-      if (user.role === "APPLICANT") navigate("/jobs");
-      else if (user.role === "ADMIN") navigate("/dashboard");
-      else navigate("/signin");
+      navigate("/jobs");
     } catch (err) {
       toast.error(err?.response?.data?.message || "Login failed");
     }
@@ -61,7 +51,7 @@ const Login = () => {
       {/* Left Image Panel */}
       <div className="hidden md:block md:w-1/2 h-full relative overflow-hidden">
         <img
-          src={role === "APPLICANT" ? seekerImage : employerImage}
+          src={employerImage}
           alt="Login Visual"
           className="w-full h-full object-cover absolute inset-0 opacity-0 animate-fadeIn"
         />
@@ -86,43 +76,9 @@ const Login = () => {
               <p className="text-gray-600">Sign in to your Anvaya account</p>
             </div>
 
-            <div className="mb-6">
-              <label className="text-black mb-3 block font-medium">
-                I am a:
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole("APPLICANT")}
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
-                    role === "APPLICANT"
-                      ? "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                      : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                  }`}
-                >
-                  <Briefcase className="w-4 h-4" />
-                  <span className="text-sm font-medium">Job Seeker</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("ADMIN")}
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
-                    role === "ADMIN"
-                      ? "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                      : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm font-medium">Employer</span>
-                </button>
-              </div>
-            </div>
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <label className="text-black block text-sm font-medium mb-1">
-                  {role === "APPLICANT" ? "Email Address" : "Company Email"}
-                </label>
+                <label className="text-black block text-sm font-medium mb-1"></label>
                 <input
                   type="email"
                   {...register("email", {
@@ -151,6 +107,17 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     {...register("password", {
                       required: "Password is required",
+                      minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters",
+                      },
+                      validate: {
+                        hasNumber: (value) =>
+                          /\d/.test(value) || "Password must contain a number",
+                        hasUpper: (value) =>
+                          /[A-Z]/.test(value) ||
+                          "Password must contain an uppercase letter",
+                      },
                     })}
                     className={`${input} pr-10`}
                     placeholder="Enter your password"
@@ -175,7 +142,6 @@ const Login = () => {
               </div>
 
               <div className="flex items-center justify-between">
-            
                 <Link
                   to="/forgot-password"
                   className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
@@ -188,7 +154,7 @@ const Login = () => {
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-lg font-semibold transition-all duration-200 flex justify-center items-center cursor-pointer"
               >
-              Sign in
+                Sign in
               </button>
 
               <div className="text-center">

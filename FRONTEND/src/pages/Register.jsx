@@ -1,11 +1,11 @@
 import { useForm } from "react-hook-form";
-import API from "../api/axios";
+// import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
-import { Eye, EyeOff, ArrowLeft, Briefcase, Users } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+// import { toast } from "react-hot-toast";
 
-import seekerImage from "../assets/jobseeker2.jpg";
+
 import employerImage from "../assets/employer2.jpg";
 
 const Register = () => {
@@ -13,31 +13,33 @@ const Register = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode:"onChange"
+  });
 
-  const [role, setRole] = useState("APPLICANT");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSubmit = async (data) => {
-    try {
-      await API.post("/auth/register", { ...data, role });
-      toast.success("Registration successful. Please login.");
-      setTimeout(
-        () =>
-          navigate("/verify", {
-            state: {
-              email: data.email,
-              role,
-            },
-          }),
-        500
-      );
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Registration failed");
-    } 
+    console.log(data);
+    navigate("/verifyi");
+    // try {
+    //   // await API.post("/auth/register", { ...data, role });
+    //   toast.success("Registration successful. Please login.");
+    //   setTimeout(
+    //     () =>
+    //       navigate("/verify", {
+    //         state: {
+    //           email: data.email,
+    //           role,
+    //         },
+    //       }),
+    //     500
+    //   );
+    // } catch (err) {
+    //   toast.error(err?.response?.data?.message || "Registration failed");
+    // }
   };
 
   return (
@@ -45,13 +47,11 @@ const Register = () => {
       {/* Left Register Panel */}
       <div className="hidden md:block md:w-1/2 h-full relative transition-all duration-500">
         <img
-          src={role === "APPLICANT" ? seekerImage : employerImage}
+          src={employerImage}
           alt="Register Visual"
           className="w-full h-full object-cover transition-opacity duration-500"
         />
       </div>
-
-      {/* Right Image Panel */}
 
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-gradient-to-br from-white via-gray-50 to-purple-50 overflow-y-auto">
         <div className="w-full max-w-md">
@@ -73,90 +73,30 @@ const Register = () => {
               </p>
             </div>
 
-            {/* Role Buttons */}
-            <div className="mb-6">
-              <label className="text-black mb-3 block font-semibold">
-                I am a:
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole("APPLICANT")}
-                  className={`p-3 rounded-xl border-2 transition-all duration-200 flex items-center justify-center space-x-2 font-medium text-sm shadow-sm ${
-                    role === "APPLICANT"
-                      ? "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                      : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                  }`}
-                >
-                  <Briefcase className="w-4 h-4" />
-                  <span>Job Seeker</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("ADMIN")}
-                  className={`p-3 rounded-xl border-2 transition-all duration-200 flex items-center justify-center space-x-2 font-medium text-sm shadow-sm ${
-                    role === "ADMIN"
-                      ? "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                      : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  <span>Employer</span>
-                </button>
-              </div>
-            </div>
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {role === "APPLICANT" ? (
-                <div className="flex gap-2">
-                  <div className="w-1/2">
-                    <label className="text-sm font-medium">First Name</label>
-                    <input
-                      {...register("firstName", {
-                        required: "First name is required",
-                      })}
-                      placeholder="John"
-                      className={input}
-                    />
-                    {errors.firstName && (
-                      <p className="text-red-500 text-sm">
-                        {errors.firstName.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="w-1/2">
-                    <label className="text-sm font-medium">Last Name</label>
-                    <input
-                      {...register("lastName", {
-                        required: "Last name is required",
-                      })}
-                      placeholder="Doe"
-                      className={input}
-                    />
-                    {errors.lastName && (
-                      <p className="text-red-500 text-sm">
-                        {errors.lastName.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label className="text-sm font-medium">Company Name</label>
-                  <input
-                    {...register("companyName", {
-                      required: "Company name is required",
-                    })}
-                    placeholder="Acme Inc."
-                    className={input}
-                  />
-                  {errors.companyName && (
-                    <p className="text-red-500 text-sm">
-                      {errors.companyName.message}
-                    </p>
-                  )}
-                </div>
-              )}
+              <div>
+                <label className="text-sm font-medium">Username</label>
+                <input
+                  {...register("username", {
+                    required: "Username is required",
+                    minLength: {
+                      value: 3,
+                      message: "Username must be at least 3 characters",
+                    },
+                    maxLength: {
+                      value: 20,
+                      message: "Username must not exceed 20 characters",
+                    },
+                  })}
+                  placeholder="John"
+                  className={input}
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-sm">
+                    {errors.username.message}
+                  </p>
+                )}
+              </div>
 
               <div>
                 <label className="text-sm font-medium">Email Address</label>
@@ -165,7 +105,7 @@ const Register = () => {
                     required: "Email is required",
                     pattern: {
                       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Invalid email format",
+                      message: "Enter a valid email address",
                     },
                   })}
                   placeholder="john@example.com"
@@ -186,6 +126,13 @@ const Register = () => {
                       minLength: {
                         value: 8,
                         message: "Password must be at least 8 characters",
+                      },
+                      validate: {
+                        hasNumber: (value) =>
+                          /\d/.test(value) || "Password must contain a number",
+                        hasUpper: (value) =>
+                          /[A-Z]/.test(value) ||
+                          "Password must contain an uppercase letter",
                       },
                     })}
                     placeholder="Create a password"
@@ -213,8 +160,8 @@ const Register = () => {
                     type={showConfirmPassword ? "text" : "password"}
                     {...register("confirmPassword", {
                       required: "Please confirm your password",
-                      validate: (value) =>
-                        value === watch("password") || "Passwords do not match",
+                     validate: (value, formValues) =>
+              value === formValues.password || "Passwords do not match",
                     })}
                     placeholder="Confirm your password"
                     className={`${input} pr-10`}
@@ -264,12 +211,14 @@ const Register = () => {
                 )}
               </div>
 
+             <div className="flex justify-center">
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-xl font-semibold transition-all duration-200 cursor-pointer"
+                className="w-1/2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 shadow-lg hover:shadow-xl rounded-xl font-semibold transition-all duration-200 cursor-pointer"
               >
-              Register
+                Register
               </button>
+              </div>
 
               <p className="text-center text-sm text-gray-600 mt-6">
                 Already have an account?{" "}
