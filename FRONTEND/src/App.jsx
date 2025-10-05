@@ -23,12 +23,13 @@ const VerifyPage = lazy(() => import("./pages/VerifyPage"));
 
 const App = () => {
   return (
-    <div className="font-sans">
+    <div className="font-sans bg-black min-h-screen flex flex-col">
       <Toaster position="top-center" reverseOrder={false} />
       <Navbar />
 
       {/* Suspense fallback */}
-      <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+      <Suspense fallback={<div className="p-4 text-center text-gray-400">Loading...</div>}>
+        <div className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signin" element={<Login />} />
@@ -80,6 +81,7 @@ const App = () => {
             }
           />
         </Routes>
+        </div>
       </Suspense>
 
       <Footer />

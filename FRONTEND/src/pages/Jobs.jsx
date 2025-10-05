@@ -72,12 +72,12 @@ const Jobs = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-black">
       <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
         <SidebarFilters onFilterChange={handleFilterChange} />
 
         <main className="md:col-span-3">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <h2 className="text-2xl font-bold text-white mb-6">
             Available Jobs
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -86,7 +86,7 @@ const Jobs = () => {
                 <SkeletonJobCard key={i} />
               ))
             ) : jobs.length === 0 ? (
-              <p className="text-gray-500 col-span-full">No jobs found.</p>
+              <p className="text-gray-400 col-span-full">No jobs found.</p>
             ) : (
               jobs.map((job) => {
                 const draft = userDrafts.find((d) => d.jobId === job.id);
@@ -101,21 +101,21 @@ const Jobs = () => {
               })
             )}
           </div>
-          <div className="flex justify-center mt-4 space-x-2">
+          <div className="flex justify-center mt-8 space-x-2">
             <button
               onClick={() => setCurrPage((p) => Math.max(p - 1, 1))}
               disabled={currPage === 1}
-              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50 cursor-pointer hover:bg-gray-700 transition border border-gray-700"
             >
               Previous
             </button>
-            <span className="px-4 py-1 text-sm">
+            <span className="px-4 py-2 text-sm text-gray-400">
               Page {currPage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrPage((p) => Math.min(p + 1, totalPages))}
               disabled={currPage === totalPages}
-              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50 cursor-pointer hover:bg-gray-700 transition border border-gray-700"
             >
               Next
             </button>
