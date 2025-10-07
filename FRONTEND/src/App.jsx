@@ -6,7 +6,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Suspense, lazy } from "react";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPasswordPage from "./pages/ResetPassword";
-import useAuthInit from "./custom-hooks/useAuthInit"
+
+import { useEffect } from "react";
+import useAuthStore from "./store/authStore";
+import API from "./api/axios";
 
 // Lazy-loaded pages
 const Home = lazy(() => import("./pages/Home"));
@@ -23,66 +26,88 @@ const JobDetailsPage = lazy(() => import("./pages/JobDetailsPage"));
 const VerifyPage = lazy(() => import("./pages/VerifyPage"));
 
 const App = () => {
-  useAuthInit();
+  const checkAuth = async () => {
+    try {
+      const res = await API.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
+        withCredentials: true,
+      });
+      const { user } = res.data;
+      useAuthStore.getState().setAuth(user);
+    } catch (err) {
+      console.log("User not logged in", err);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
   return (
     <div className="font-sans bg-black min-h-screen flex flex-col">
       <Toaster position="top-center" reverseOrder={false} />
       <Navbar />
 
       {/* Suspense fallback */}
-      <Suspense fallback={<div className="p-4 text-center text-gray-400">Loading...</div>}>
+      <Suspense
+        fallback={
+          <div className="p-4 text-center text-gray-400">Loading...</div>
+        }
+      >
         <div className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signin" element={<Login />} />
-          <Route path="/signup" element={<Register />} />
-          <Route path="/verify" element={<VerifyPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/forgot-password" element={<ForgotPassword/>}/>
-           <Route path="/reset-password/:token" element={<ResetPasswordPage/>}/>
-          <Route
-            path="/apply/:jobId"
-            element={
-              <ProtectedRoute requireAuth={true} role="APPLICANT">
-                <ApplyPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/myapplications"
-            element={
-              <ProtectedRoute requireAuth={true} role="APPLICANT">
-                <MyApplicationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/post-job"
-            element={
-              <ProtectedRoute requireAuth={true} role="ADMIN">
-                <PostJobs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/job/:jobId/applications"
-            element={
-              <ProtectedRoute requireAuth={true} role="ADMIN">
-                <JobApplicationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/job/:jobId/details"
-            element={
-              <ProtectedRoute requireAuth={true} role="ADMIN">
-                <JobDetailsPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/signin" element={<Login />} />
+            <Route path="/signup" element={<Register />} />
+            <Route path="/verify" element={<VerifyPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
+            <Route
+              path="/apply/:jobId"
+              element={
+                <ProtectedRoute requireAuth={true} role="APPLICANT">
+                  <ApplyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/myapplications"
+              element={
+                <ProtectedRoute requireAuth={true} role="APPLICANT">
+                  <MyApplicationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/post-job"
+              element={
+                <ProtectedRoute requireAuth={true} role="ADMIN">
+                  <PostJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/job/:jobId/applications"
+              element={
+                <ProtectedRoute requireAuth={true} role="ADMIN">
+                  <JobApplicationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/job/:jobId/details"
+              element={
+                <ProtectedRoute requireAuth={true} role="ADMIN">
+                  <JobDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
         </div>
       </Suspense>
 

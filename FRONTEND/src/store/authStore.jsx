@@ -1,8 +1,9 @@
 import { create } from "zustand";
 
+
 const useAuthStore = create((set) => ({
-  user:  null,
-  accessToken:  null,
+  user: null,
+  accessToken: null,
   isLoggedIn: false,
   isVerified: false,
   isAuthLoaded: false,
@@ -10,14 +11,14 @@ const useAuthStore = create((set) => ({
   setAuth: (user, token) => {
     set({
       user,
-      accessToken:token,
+      accessToken: token,
       isLoggedIn: true,
       isVerified: user?.isVerified || false,
-      isAuthLoaded: true
+      isAuthLoaded: true,
     });
   },
 
-  setAuthLoaded:()=>set({isAuthLoaded:true}),
+  setAuthLoaded: () => set({ isAuthLoaded: true }),
 
   logout: () => {
     set({
@@ -27,6 +28,7 @@ const useAuthStore = create((set) => ({
       isVerified: false,
     });
   },
+
 }));
 
 export default useAuthStore;

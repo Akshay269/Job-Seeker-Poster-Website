@@ -6,7 +6,9 @@ const {
   createRefreshTokenString,
   saveRefreshToken,
   hashToken,
-  COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+  verifyToken,
+  ACCESS_COOKIE_NAME
 } = require("../utils/tokens");
 const generateOTP = require("../utils/generateOtp");
 const sendEmail = require("../utils/sendEmail");
@@ -104,12 +106,19 @@ exports.login = async (req, res) => {
       userAgent: req.get("User-Agent"),
     });
 
-    res.cookie(COOKIE_NAME, refreshPlain, {
+     res.cookie(ACCESS_COOKIE_NAME, accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie(REFRESH_COOKIE_NAME, refreshPlain, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 30*24*60*60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     const { password: _, otp, otpExpires, ...userData } = user;
@@ -117,6 +126,38 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getMe = async (req, res) => {
+  try {
+    const token =
+      req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "No access token" });
+    }
+
+    // Verify token
+    const decoded = verifyToken(token);
+    if (!decoded?.id) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    // Find user in DB
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Strip sensitive fields
+    const { password, otp, otpExpires, ...safeUser } = user;
+    return res.json({ user: safeUser });
+  } catch (err) {
+    console.error("getMe error:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -222,7 +263,13 @@ exports.refreshToken = async (req, res) => {
     const accessToken = signAccessToken({ id: user.id, email: user.email });
 
     // Set new refresh token in cookie
-    res.cookie(COOKIE_NAME, newPlain, {
+     res.cookie(ACCESS_COOKIE_NAME, accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15 min
+    });
+    res.cookie(REFRESH_COOKIE_NAME, newPlain, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const COOKIE_NAME = "refresh_token";
+const REFRESH_COOKIE_NAME = "refresh_token";
+const ACCESS_COOKIE_NAME = "access_token";
 const crypto = require("crypto");
 /**
  * Generate an access token
@@ -41,9 +42,9 @@ async function saveRefreshToken({ userId, tokenHash, ip, userAgent }) {
 /**
  * Verify a token (access or refresh)
  */
-function verifyToken(token, secret) {
+function verifyToken(token) {
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (err) {
     return null;
   }
@@ -55,5 +56,6 @@ module.exports = {
   saveRefreshToken,
   verifyToken,
   hashToken,
-  COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+  ACCESS_COOKIE_NAME
 };

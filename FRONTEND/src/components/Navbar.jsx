@@ -1,18 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
-import {
-  LogIn,
-  UserPlus,
-  Briefcase,
-  Users,
-  Info,
-  FileText,
-} from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserTie } from "@fortawesome/free-solid-svg-icons";
-import Anvaya2 from "../assets/Anvaya2.png";
-import { useState } from "react";
+import API from "../api/axios";
 
 const Navbar = () => {
   const { user, isLoggedIn, logout } = useAuthStore();
@@ -21,8 +10,8 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await API.post('/auth/logout');
-      logout(); // Clear Zustand store
+      await API.post("/auth/logout");
+      logout(); 
       toast.success("Logged out successfully");
       navigate("/", { replace: true });
     } catch {
@@ -30,136 +19,74 @@ const Navbar = () => {
     }
   };
 
-  console.log("user",user);
-  console.log("logged status",isLoggedIn);
-
   const isActive = (path) => location.pathname === path;
 
   return (
-    <>
+    <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
+      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <Link to="/" className="text-2xl font-bold text-primary">
+          Hell-o-o-Jobs
+        </Link>
 
-      <nav className="relative bg-white/80 backdrop-blur-lg border-b border-gray-200 top-0 z-50">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-orange-100/20"></div>
+        <div className="flex items-center gap-6">
+          {isLoggedIn ? (
+            <>
+              <span className="text-gray-700 font-medium">
+                Hello, {user?.username || user?.email}
+              </span>
 
-        <div className="max-w-10xl mx-auto px-4 sm:px-7 lg:px-3 relative">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <RouterLink to="/" className="flex items-center gap-2">
-              <div className="relative">
-                <img
-                  src={Anvaya2}
-                  alt="Anvaya Logo"
-                  className="w-15 h-15 object-cover drop-shadow-xl"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
-                  Anvaya
-                </span>
-                <span className="text-xs text-gray-500 -mt-1">
-                  Sacred Careers 🌸
-                </span>
-              </div>
-            </RouterLink>
+              <Link
+                to="/jobs"
+                className={`transition-colors ${
+                  isActive("/jobs") ? "text-primary" : "text-foreground hover:text-primary"
+                }`}
+              >
+                Find Jobs
+              </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-6">
-              {navItems.map((item) => (
-                <RouterLink
-                  key={item.name}
-                  to={item.href}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-purple-100/40 transition"
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </RouterLink>
-              ))}
+              <Link
+                to="/myapplications"
+                className={`transition-colors ${
+                  isActive("/myapplications") ? "text-primary" : "text-foreground hover:text-primary"
+                }`}
+              >
+                My Applications
+              </Link>
 
-              {!isLoggedIn ? (
-                <>
-                <RouterLink
-                    to="/about"
-                    className="flex items-center gap-2 text-gray-700 hover:text-purple-700"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span>About Us</span>
-                  </RouterLink>
-                  <RouterLink
-                    to="/signin"
-                    className="flex items-center gap-2 text-gray-700 hover:text-purple-700"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span>Sign In</span>
-                  </RouterLink>
-                  <RouterLink
-                    to="/signup"
-                    className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-orange-500 text-white px-4 py-2 rounded-lg shadow hover:from-purple-700 hover:to-orange-600"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Sign Up</span>
-                  </RouterLink>
-                </>
-              ) : (
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2 text-base font-semibold text-black">
-                    <FontAwesomeIcon
-                      icon={faUserTie}
-                      className="text-purple-600"
-                    />
-                    <span>{user?.name || user?.email}</span>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg shadow-md hover:from-red-600 hover:to-pink-700 transition-all cursor-pointer"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+              <Link
+                to="/post-job"
+                className={`transition-colors ${
+                  isActive("/post-job") ? "text-primary" : "text-foreground hover:text-primary"
+                }`}
+              >
+                Post Job
+              </Link>
 
-          {/* Mobile Dropdown */}
-          {isOpen && (
-            <div className="md:hidden mt-2 space-y-2 pb-4">
-              {navItems.map((item) => (
-                <RouterLink
-                  key={item.name}
-                  to={item.href}
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg bg-purple-50 hover:bg-purple-100"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </RouterLink>
-              ))}
+              <Link
+                to="/posted-jobs"
+                className={`transition-colors ${
+                  isActive("/posted-jobs") ? "text-primary" : "text-foreground hover:text-primary"
+                }`}
+              >
+                Posted Jobs
+              </Link>
 
-              {!isLoggedIn ? (
-                <>
-                  <RouterLink
-                    to="/signin"
-                    className="block px-4 py-2 text-gray-700 hover:bg-purple-100"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign In
-                  </RouterLink>
-                  <RouterLink
-                    to="/signup"
-                    className="block px-4 py-2 bg-purple-600 text-white rounded-lg text-center hover:bg-purple-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign Up
-                  </RouterLink>
-                </>
-              ) : (
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                >
-                  Logout
-                </button>
-              )}
-            </div>
+              <button onClick={handleLogout} className="btn-secondary">
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/signin"
+                className="text-foreground hover:text-primary transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link to="/signup" className="btn-primary">
+                Sign Up
+              </Link>
+            </>
           )}
         </div>
       </nav>
