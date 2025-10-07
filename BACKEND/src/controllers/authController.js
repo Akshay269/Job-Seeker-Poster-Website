@@ -7,8 +7,7 @@ const {
   saveRefreshToken,
   hashToken,
   REFRESH_COOKIE_NAME,
-  verifyToken,
-  ACCESS_COOKIE_NAME
+  verifyToken
 } = require("../utils/tokens");
 const generateOTP = require("../utils/generateOtp");
 const sendEmail = require("../utils/sendEmail");
@@ -106,12 +105,6 @@ exports.login = async (req, res) => {
       userAgent: req.get("User-Agent"),
     });
 
-     res.cookie(ACCESS_COOKIE_NAME, accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
 
     res.cookie(REFRESH_COOKIE_NAME, refreshPlain, {
       httpOnly: true,
@@ -129,37 +122,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.getMe = async (req, res) => {
-  try {
-    const token =
-      req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ message: "No access token" });
-    }
 
-    // Verify token
-    const decoded = verifyToken(token);
-    if (!decoded?.id) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-
-    // Find user in DB
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Strip sensitive fields
-    const { password, otp, otpExpires, ...safeUser } = user;
-    return res.json({ user: safeUser });
-  } catch (err) {
-    console.error("getMe error:", err);
-    return res.status(401).json({ message: "Invalid or expired token" });
-  }
-};
 
 //Verify
 exports.verifyAccount = async (req, res) => {
@@ -211,12 +174,12 @@ exports.resendOTP = async (req, res) => {
 // Refresh Token
 exports.refreshToken = async (req, res) => {
   try {
-    const token = req.cookies[COOKIE_NAME];
-    if (!token) {
+    const existingRefToken = req.cookies?.[REFRESH_COOKIE_NAME];
+    if (!existingRefToken) {
       return res.status(401).json({ message: "No refresh token" });
     }
 
-    const tokenHash = hashToken(token);
+    const tokenHash = hashToken(existingRefToken);
     const dbToken = await prisma.refreshToken.findUnique({
       where: { tokenHash },
     });
@@ -245,7 +208,7 @@ exports.refreshToken = async (req, res) => {
     }
 
     // Rotate refresh token
-    const newPlain = createRefreshTokenString();
+    const newPlain = createRefreshTokenString(user);
     const newHash = hashToken(newPlain);
     const newDb = await saveRefreshToken({
       userId: dbToken.userId,
@@ -262,13 +225,7 @@ exports.refreshToken = async (req, res) => {
     // Sign new access token with minimal payload
     const accessToken = signAccessToken({ id: user.id, email: user.email });
 
-    // Set new refresh token in cookie
-     res.cookie(ACCESS_COOKIE_NAME, accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000, // 15 min
-    });
+   
     res.cookie(REFRESH_COOKIE_NAME, newPlain, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -287,10 +244,47 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
+exports.getMe = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token); 
+
+    if (!decoded || !decoded.id) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        isVerified: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ user });
+  } catch (error) {
+    console.error("Error in /auth/me:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 // Logout
 exports.logout = async (req, res) => {
   try {
-    const token = req.cookies[COOKIE_NAME];
+    const token = req.cookies[REFRESH_COOKIE_NAME];
     if (token) {
       const tokenHash = hashToken(token);
       await prisma.refreshToken.updateMany({
@@ -298,7 +292,7 @@ exports.logout = async (req, res) => {
         data: { revoked: true },
       });
     }
-    res.clearCookie(COOKIE_NAME, { path: "/" });
+    res.clearCookie(REFRESH_COOKIE_NAME, { path: "/" });
     return res.json({ message: "Logged out successfully" });
   } catch (error) {
     console.error(error);

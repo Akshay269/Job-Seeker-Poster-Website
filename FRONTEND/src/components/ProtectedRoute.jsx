@@ -2,32 +2,32 @@ import { Navigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
 
-
-
-
-const ProtectedRoute = ({ children, requireAuth = false, guestOnly = false, role = null }) => {
-  const { isLoggedIn, user } = useAuthStore();
+const ProtectedRoute = ({
+  children,
+  requireAuth = false,
+  guestOnly = false,
+}) => {
+  const { isLoggedIn, user, isAuthLoaded } = useAuthStore();
   const location = useLocation();
 
+  if (!isAuthLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-300 text-lg">
+        Checking session...
+      </div>
+    );
+  }
 
-  
-  // Require login
-  if (requireAuth && !isLoggedIn && user==null) {
+  if (requireAuth && !isLoggedIn && !user) {
     toast.error("Please login to access this page");
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
 
-  // Guest-only page 
-  if (guestOnly && isLoggedIn) {
-    toast.error("You are already logged in. Please logout first.");
-    return <Navigate to="/" replace />;
-  }
+ if (isAuthLoaded && guestOnly && isLoggedIn) {
+  // just redirect silently, no toast
+  return <Navigate to="/jobs" replace />;
+}
 
-  // Role check
-  if (role && user?.role !== role) {
-    toast.error("Unauthorized access");
-    return <Navigate to="/" replace />;
-  }
 
   return children;
 };

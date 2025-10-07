@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-hot-toast";
-import API from "../api/axios";
+
 
 const Navbar = () => {
   const { user, isLoggedIn, logout } = useAuthStore();
@@ -10,7 +10,6 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await API.post("/auth/logout");
       logout(); 
       toast.success("Logged out successfully");
       navigate("/", { replace: true });

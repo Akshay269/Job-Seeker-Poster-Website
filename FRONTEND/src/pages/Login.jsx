@@ -38,7 +38,7 @@ const Login = () => {
       setAuth(user, accessToken);
       toast.success(`Welcome back, ${user.name || user.email}`);
 
-      navigate("/jobs");
+      navigate("/jobs", { replace: true });
     } catch (err) {
       toast.error(err?.response?.data?.message || "Login failed");
     }

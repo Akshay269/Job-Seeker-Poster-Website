@@ -5,7 +5,7 @@ const { register, login,verifyAccount,resendOTP,refreshToken,forgotPassword,rese
 
 router.post('/register', register);
 router.post('/login', login);
-router.get("/me",getMe);
+router.get('/me',getMe);
 router.post('/verify', verifyAccount);
 router.post('/resend-otp', resendOTP);
 router.get('/refresh-token',refreshToken);

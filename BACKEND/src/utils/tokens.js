@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const REFRESH_COOKIE_NAME = "refresh_token";
-const ACCESS_COOKIE_NAME = "access_token";
 const crypto = require("crypto");
 /**
  * Generate an access token
@@ -57,5 +56,4 @@ module.exports = {
   verifyToken,
   hashToken,
   REFRESH_COOKIE_NAME,
-  ACCESS_COOKIE_NAME
 };
