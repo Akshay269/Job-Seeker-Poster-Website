@@ -12,7 +12,7 @@ const ForgotPassword = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await API.post("/api/auth/forgot-password", {
+      const res = await API.post("/auth/forgot-password", {
         email: data.email,
       });
       setMessage(res.data.message || "Check your email for reset link.");

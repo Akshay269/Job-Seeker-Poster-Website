@@ -5,6 +5,8 @@ const jobRoutes = require("./src/routes/jobRoutes");
 const appRoutes = require("./src/routes/appRoutes");
 const cloudRoutes = require("./src/routes/cloudRoutes");
 const draftRoutes = require("./src/routes/draftRoutes");
+const cookieParser = require("cookie-parser");
+
 
 const app = express();
 
@@ -14,6 +16,8 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
+
 app.use(express.json());
 // await initGoogleAuth();
 app.use("/auth", authRoutes);

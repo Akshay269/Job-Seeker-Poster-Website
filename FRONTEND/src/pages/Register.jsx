@@ -1,7 +1,12 @@
 import { useForm } from "react-hook-form";
+// import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+// import { toast } from "react-hot-toast";
+
+
+import employerImage from "../assets/employer2.jpg";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,25 +21,22 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const onSubmit = async (data) => {
-    console.log(data);
-    navigate("/verifyi");
-    // try {
-    //   // await API.post("/auth/register", { ...data, role });
-    //   toast.success("Registration successful. Please login.");
-    //   setTimeout(
-    //     () =>
-    //       navigate("/verify", {
-    //         state: {
-    //           email: data.email,
-    //           role,
-    //         },
-    //       }),
-    //     500
-    //   );
-    // } catch (err) {
-    //   toast.error(err?.response?.data?.message || "Registration failed");
-    // }
+  const onSubmit = async (data) => {  
+    try {
+       await API.post("/auth/register", { ...data });
+      toast.success("Registration successful. Please login.");
+      setTimeout(
+        () =>
+          navigate("/verify", {
+            state: {
+              email: data.email,
+            },
+          }),
+        500
+      );
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Registration failed");
+    }
   };
 
   return (
@@ -50,38 +52,38 @@ const Register = () => {
               Back to Home
             </Link>
 
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Create Account
-            </h1>
-            <p className="text-gray-400 text-sm">
-              Join us and start your journey
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="text-white text-sm font-medium mb-2 block">Username</label>
-              <input
-                {...register("username", {
-                  required: "Username is required",
-                  minLength: {
-                    value: 3,
-                    message: "Username must be at least 3 characters",
-                  },
-                  maxLength: {
-                    value: 20,
-                    message: "Username must not exceed 20 characters",
-                  },
-                })}
-                placeholder="John"
-                className={input}
-              />
-              {errors.username && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.username.message}
-                </p>
-              )}
+              <h1 className="text-3xl font-extrabold text-purple-700 mb-2">
+                Create Account
+              </h1>
+              <p className="text-gray-600 text-sm">
+                Join Anvaya and start your journey
+              </p>
             </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Username</label>
+                <input
+                  {...register("username", {
+                    required: "Username is required",
+                    minLength: {
+                      value: 3,
+                      message: "Username must be at least 3 characters",
+                    },
+                    maxLength: {
+                      value: 20,
+                      message: "Username must not exceed 20 characters",
+                    },
+                  })}
+                  placeholder="John"
+                  className={input}
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-sm">
+                    {errors.username.message}
+                  </p>
+                )}
+              </div>
 
             <div>
               <label className="text-white text-sm font-medium mb-2 block">Email Address</label>

@@ -19,7 +19,7 @@ const Verify = () => {
   } = useForm();
 
   useEffect(() => {
-    if (!state?.email || !state?.role) {
+    if (!state?.email) {
       toast.error("Missing verification info. Please register again.");
       navigate("/register");
     }
@@ -58,7 +58,6 @@ const Verify = () => {
     try {
       await API.post("/auth/resend-otp", {
         email: state.email,
-        role: state.role,
       });
       toast.success("OTP resent successfully!");
       setResendTimer(60); 

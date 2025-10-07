@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from "react";
-import JobCard from "../components/JobCard";
 import SidebarFilters from "../components/SideBarFilters";
 import API from "../api/axios";
 import useAuthStore from "../store/authStore";

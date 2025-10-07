@@ -1,9 +1,16 @@
 
 import {
   Award,
+  Search,
+  MapPin,
   Users,
   Briefcase,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
+import JobCard from "../components/JobCard";
+import CompanyCard from "../components/CompanyCard";
+import Anvaya2 from "../assets/Anvaya2.png";
 import { useNavigate } from "react-router-dom";
 
 
@@ -105,54 +112,58 @@ const Home = () => {
   ];
 
   return (
-    <div className="bg-black min-h-screen">
-      <section className="py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-white">
-            Find Your Dream Job
-          </h1>
+    <>
+      <section className="bg-gradient-to-br from-purple-50/50 via-pink-50/30 to-orange-50/50 py-20 lg:py-28 overflow-hidden relative">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-400 to-orange-400 rounded-full blur-3xl delay-1000"></div>
+        </div>
 
-          <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-            Connect with top companies and opportunities that match your skills and aspirations
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <button
-              onClick={() => navigate("/jobs")}
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-            >
-              Browse Jobs
-            </button>
-            <button
-              onClick={() => navigate("/signup")}
-              className="px-8 py-4 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition font-medium border border-gray-700"
-            >
-              Sign Up Now
-            </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center animate-pulse">
+          <div className="flex justify-center mb-1">
+            <div className="w-80 h-80 justify-center bg-gradient-to-br from-white via-purple-50 to-pink-50 rounded-full shadow-2xl flex items-center border-2 border-purple-200">
+              <img
+                src={Anvaya2}
+                alt="Anvaya Lotus"
+                className="w-70 h-70 object-cover drop-shadow-xl "
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-20">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-              <Briefcase className="w-10 h-10 text-blue-500 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold text-white mb-2">Browse Jobs</h3>
-              <p className="text-gray-400 text-sm">Explore thousands of job opportunities from leading companies</p>
-            </div>
+          <h1 className="text-6xl lg:text-8xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent drop-shadow-sm">
+              Anvaya
+            </span>
+          </h1>
 
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-              <Users className="w-10 h-10 text-blue-500 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold text-white mb-2">Connect</h3>
-              <p className="text-gray-400 text-sm">Network with professionals and grow your career</p>
-            </div>
+          <h1 className="text-2xl">
+            {" "}
+            <span className="bg-gradient-to-r from-orange-500 to-orange-800 bg-clip-text text-transparent drop-shadow-sm">
+              "The Sacred Link Between Skill and Success"
+            </span>
+          </h1>
 
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-              <Award className="w-10 h-10 text-blue-500 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold text-white mb-2">Get Hired</h3>
-              <p className="text-gray-400 text-sm">Apply and track your applications in one place</p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm lg:text-base text-gray-600">
+            <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-purple-200">
+              <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
+              <span>50K+ Souls Connected</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-pink-200">
+              <span className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>
+              <span>1000+ Sacred Partnerships</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-orange-200">
+              <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+              <span>Divine Success Rate</span>
             </div>
           </div>
         </div>
+
+    
       </section>
-    </div>
+
+     
+    </>
   );
 };
 
