@@ -25,7 +25,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const res = await API.post("/auth/login", data);
-      const { user, token } = res.data;
+      const { user, accessToken } = res.data;
 
       if (!user.isVerified) {
         toast("Please verify your account to continue", { icon: "🔒" });
@@ -37,7 +37,7 @@ const Login = () => {
         return;
       }
 
-      setAuth(user, token);
+      setAuth(user, accessToken);
       toast.success(`Welcome back, ${user.name || user.email}`);
 
       navigate("/jobs");
@@ -70,10 +70,10 @@ const Login = () => {
                 Back to Home
               </Link>
 
-              <h1 className="text-2xl font-bold text-black mb-2">
-                Welcome Back
+              <h1 className="text-3xl font-extrabold text-purple-700 mb-2">
+                 Welcome Back
               </h1>
-              <p className="text-gray-600">Sign in to your Anvaya account</p>
+              <p className="text-gray-600">Sign in to your account</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

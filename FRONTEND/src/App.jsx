@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Suspense, lazy } from "react";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPasswordPage from "./pages/ResetPassword";
+import useAuthInit from "./custom-hooks/useAuthInit"
 
 // Lazy-loaded pages
 const Home = lazy(() => import("./pages/Home"));
@@ -22,6 +23,7 @@ const JobDetailsPage = lazy(() => import("./pages/JobDetailsPage"));
 const VerifyPage = lazy(() => import("./pages/VerifyPage"));
 
 const App = () => {
+  useAuthInit();
   return (
     <div className="font-sans">
       <Toaster position="top-center" reverseOrder={false} />

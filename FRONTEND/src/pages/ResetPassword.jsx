@@ -16,12 +16,12 @@ const ResetPassword = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await API.post("/api/auth/reset-password", {
+      const res = await API.post("/auth/reset-password", {
         token,
         password: data.password,
       });
       setMessage(res.data.message || "Password reset successful!");
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => navigate("/signin"), 2000);
     } catch (error) {
       setMessage(error.response?.data?.message || "Something went wrong");
     }

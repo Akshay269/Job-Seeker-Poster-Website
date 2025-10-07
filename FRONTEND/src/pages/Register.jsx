@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form";
-// import API from "../api/axios";
+import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-// import { toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 
 import employerImage from "../assets/employer2.jpg";
@@ -21,25 +21,22 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const onSubmit = async (data) => {
-    console.log(data);
-    navigate("/verifyi");
-    // try {
-    //   // await API.post("/auth/register", { ...data, role });
-    //   toast.success("Registration successful. Please login.");
-    //   setTimeout(
-    //     () =>
-    //       navigate("/verify", {
-    //         state: {
-    //           email: data.email,
-    //           role,
-    //         },
-    //       }),
-    //     500
-    //   );
-    // } catch (err) {
-    //   toast.error(err?.response?.data?.message || "Registration failed");
-    // }
+  const onSubmit = async (data) => {  
+    try {
+       await API.post("/auth/register", { ...data });
+      toast.success("Registration successful. Please login.");
+      setTimeout(
+        () =>
+          navigate("/verify", {
+            state: {
+              email: data.email,
+            },
+          }),
+        500
+      );
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Registration failed");
+    }
   };
 
   return (
@@ -69,11 +66,11 @@ const Register = () => {
                 Create Account
               </h1>
               <p className="text-gray-600 text-sm">
-                Join Anvaya and start your journey
+                Join Us and start your journey
               </p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               <div>
                 <label className="text-sm font-medium">Username</label>
                 <input

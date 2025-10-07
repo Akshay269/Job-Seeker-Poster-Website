@@ -7,6 +7,6 @@ const requireAuth=require('../middleware/authMiddleware');
 router.get("/postedjobs", requireAuth, getPostedJobs);
 router.get('/:jobId',requireAuth,getJobDetails);
 router.post("/post-job", requireAuth, postJob);
-router.get('/', getAllJobs);
+router.get('/', requireAuth,getAllJobs);
 
 module.exports = router;

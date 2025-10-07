@@ -8,7 +8,7 @@ router.get("/:jobId", requireAuth, getApplicationsbyId);
 router.get("/user/:userId",requireAuth,getApplicationsByUser);
 router.patch("/:applicationId/status",requireAuth,updateApplicationStatus);
 router.post("/:applicationId/schedule-interview",requireAuth,scheduleInterview);
-router.post("/submit",submitApplication);
+router.post("/submit",requireAuth,submitApplication);
 
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const {
   signAccessToken,
   createRefreshTokenString,
@@ -38,12 +39,16 @@ exports.register = async (req, res) => {
         otpExpires,
       },
     });
-
-    await sendEmail({
-      to: email,
-      subject: "Your OTP for Anvaya",
-      html: VerifyEmailTemplate({ name: user.username, otp }),
-    });
+    console.log("register verify otp:", otp);
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Your OTP for Anvaya",
+        html: VerifyEmailTemplate({ name: user.username, otp }),
+      });
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError.message);
+    }
 
     return res
       .status(201)
@@ -56,7 +61,7 @@ exports.register = async (req, res) => {
 
 // Login
 exports.login = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -66,17 +71,21 @@ exports.login = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    // If not verified, send OTP
     if (!user.isVerified) {
       const otp = generateOTP();
       const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
       await prisma.user.update({ where: { email }, data: { otp, otpExpires } });
 
-      await sendEmail({
-        to: email,
-        subject: "Your OTP for Anvaya",
-        html: VerifyEmailTemplate({ name: user.username, otp }),
-      });
+      console.log("login verify otp:", otp);
+      try {
+        await sendEmail({
+          to: email,
+          subject: "Your OTP for Anvaya",
+          html: VerifyEmailTemplate({ name: user.username, otp }),
+        });
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError.message);
+      }
 
       return res.status(202).json({
         message: "Account not verified. OTP sent.",
@@ -86,10 +95,11 @@ exports.login = async (req, res) => {
 
     // ✅ Verified: issue tokens
     const accessToken = signAccessToken(user);
-    const refreshPlain = createRefreshTokenString();
+    const refreshPlain = createRefreshTokenString(user);
+    const refreshHash = hashToken(refreshPlain);
     await saveRefreshToken({
       userId: user.id,
-      tokenPlain: refreshPlain,
+      tokenHash: refreshHash,
       ip: req.ip,
       userAgent: req.get("User-Agent"),
     });
@@ -99,7 +109,7 @@ exports.login = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 30*24*60*60 * 1000,
     });
 
     const { password: _, otp, otpExpires, ...userData } = user;
@@ -161,13 +171,16 @@ exports.resendOTP = async (req, res) => {
 exports.refreshToken = async (req, res) => {
   try {
     const token = req.cookies[COOKIE_NAME];
-    if (!token) return res.status(401).json({ message: "No refresh token" });
+    if (!token) {
+      return res.status(401).json({ message: "No refresh token" });
+    }
 
     const tokenHash = hashToken(token);
     const dbToken = await prisma.refreshToken.findUnique({
       where: { tokenHash },
     });
 
+    // Validate refresh token
     if (!dbToken || dbToken.revoked || dbToken.expiresAt < new Date()) {
       if (dbToken) {
         await prisma.refreshToken.updateMany({
@@ -180,11 +193,22 @@ exports.refreshToken = async (req, res) => {
         .json({ message: "Invalid or expired refresh token" });
     }
 
-    // rotate refresh token
+    // Fetch user first (before using it anywhere)
+    const user = await prisma.user.findUnique({
+      where: { id: dbToken.userId },
+    });
+
+    if (!user) {
+      console.error("No user found for refresh token:", dbToken.userId);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Rotate refresh token
     const newPlain = createRefreshTokenString();
+    const newHash = hashToken(newPlain);
     const newDb = await saveRefreshToken({
       userId: dbToken.userId,
-      tokenPlain: newPlain,
+      tokenHash: newHash,
       ip: req.ip,
       userAgent: req.get("User-Agent"),
     });
@@ -194,23 +218,24 @@ exports.refreshToken = async (req, res) => {
       data: { revoked: true, replacedById: newDb.id },
     });
 
-    const user = await prisma.user.findUnique({
-      where: { id: dbToken.userId },
-    });
-    const accessToken = signAccessToken(user);
+    // Sign new access token with minimal payload
+    const accessToken = signAccessToken({ id: user.id, email: user.email });
 
+    // Set new refresh token in cookie
     res.cookie(COOKIE_NAME, newPlain, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
+    // Exclude sensitive fields before sending user data
     const { password: _, otp, otpExpires, ...userData } = user;
+
     return res.json({ user: userData, accessToken });
   } catch (error) {
-    console.error(error);
+    console.error("Refresh token error:", error);
     return res.status(500).json({ message: "Server Error" });
   }
 };
@@ -253,17 +278,22 @@ exports.forgotPassword = async (req, res) => {
       data: { token: resetToken, userId: user.id, expiresAt },
     });
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
     // Send email
-    await sendEmail({
-      to: email,
-      subject: "Password Reset Request",
-      html: `<p>Hello,</p>
+    console.log(resetLink);
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Password Reset Request",
+        html: `<p>Hello,</p>
              <p>You requested a password reset. Click the link below to reset:</p>
              <a href="${resetLink}">${resetLink}</a>
              <p>This link will expire in 15 minutes.</p>`,
-    });
+      });
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError.message);
+    }
 
     res.json({ message: "Password reset email sent" });
   } catch (error) {
