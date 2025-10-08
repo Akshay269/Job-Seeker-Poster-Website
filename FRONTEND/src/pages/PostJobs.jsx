@@ -3,41 +3,8 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useState, useRef } from "react";
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+import {deleteFromCloudinary,uploadToCloudinary} from "../utils/cloudinary";
 
-
-const getUploadSignature = async () => {
-  const res = await API.get(`/cloudinary/signature`);
-  return await res.data;
-};
-
-const uploadToCloudinary = async (file) => {
-  const { timestamp, signature, apiKey, folder } = await getUploadSignature();
-  const formData = new FormData();
-
-  formData.append("file", file);
-  formData.append("api_key", apiKey);
-  formData.append("timestamp", timestamp);
-  formData.append("signature", signature);
-  formData.append("folder", folder);
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    {
-      method: "POST",
-      body: formData,
-    }
-  );
-
-  if (!res.ok) throw new Error("Upload failed");
-
-  const data = await res.json();
-  return { url: data.secure_url, publicId: data.public_id };
-};
-
-const deleteFromCloudinary = async (publicId) => {
-  await API.post(`/cloudinary/delete`, { publicId });
-};
 const PostJobs = () => {
   const {
     register,
@@ -51,12 +18,45 @@ const PostJobs = () => {
   const logoUrlRef = useRef("");
   const [logoPublicId, setLogoPublicId] = useState("");
   const fileInputRef = useRef(null);
+  const [jdUrl, setJdUrl] = useState("");
+  const [jdPublicId, setJdPublicId] = useState("");
+  const [jdError, setJdError] = useState("");
+  const jdFileInputRef = useRef(null);
+
+  
+  const handleJDChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setJdError("Please upload a valid PDF file.");
+      return;
+    }
+
+    try {
+      const { url, publicId } = await uploadToCloudinary(file);
+      setJdUrl(url);
+      setJdPublicId(publicId);
+      setJdError("");
+      toast.success("JD uploaded successfully!");
+    } catch {
+      setJdError("JD upload failed.");
+      toast.error("JD upload failed");
+    }
+  };
+
+  const removeJD = async () => {
+    if (jdPublicId) {
+      await deleteFromCloudinary(jdPublicId);
+      setJdUrl("");
+      setJdPublicId("");
+    }
+  };
 
   const handleLogoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-    
       const { url, publicId } = await uploadToCloudinary(file);
       setLogoUrl(url);
       setLogoPublicId(publicId);
@@ -64,7 +64,7 @@ const PostJobs = () => {
       toast.success("Logo uploaded");
     } catch {
       toast.error("Logo upload failed");
-    } 
+    }
   };
 
   const removeLogo = async () => {
@@ -76,16 +76,21 @@ const PostJobs = () => {
   };
 
   const onSubmit = async (data) => {
-   
     if (!logoUrlRef.current) {
       toast.error("Please upload a company logo before submitting.");
-   
       return;
     }
+
+    if (!jdUrl) {
+      toast.error("Please upload a Job Description PDF before submitting.");
+      return;
+    }
+
     try {
       const payload = {
         ...data,
         companyIcon: logoUrlRef.current,
+        jobDescriptionFile: jdUrl, // 👈 add JD file URL
       };
       const res = await API.post("/jobs/post-job", payload);
       toast.success(`Job "${res.data.title}" posted successfully!`);
@@ -94,7 +99,7 @@ const PostJobs = () => {
       }, 500);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to post job");
-    } 
+    }
   };
 
   return (
@@ -199,48 +204,83 @@ const PostJobs = () => {
               </div>
               <div>
                 <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Salary Range
+                  Salary Range (in ₹)
                 </label>
-                <input
-                  {...register("salaryRange", {
-                    required: "Salary range is required",
-                    validate: (value) => {
-                      const match = value.match(
-                        /^\$?(\d+(?:,\d+)?)(k|K)?(?:\s*-\s*\$?(\d+(?:,\d+)?)(k|K)?)?$/
-                      );
 
-                      if (!match) {
-                        return "Invalid format. Example: 50k - 100k or $80,000 - $120,000";
-                      }
+                <div className="flex gap-3">
+                  {/* Min Salary */}
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      {...register("minSalary", {
+                        required: "Minimum salary is required",
+                        validate: (value) => {
+                          const match = value.match(
+                            /^₹?\s*(\d{1,3}(?:,\d{3})*|\d+)(k|K)?$/
+                          );
+                          if (!match) {
+                            return "Invalid format. Example: 50k or ₹50,000";
+                          }
 
-                      let min = parseInt(match[1].replace(/,/g, ""));
-                      let max = match[3]
-                        ? parseInt(match[3].replace(/,/g, ""))
-                        : null;
+                          let min = parseInt(match[1].replace(/,/g, ""));
+                          if (match[2]) min *= 1000;
+                          if (min <= 0) return "Salary must be positive";
 
-                      // If "k" suffix is present, multiply by 1000
-                      if (match[2]) min *= 1000;
-                      if (max && match[4]) max *= 1000;
+                          return true;
+                        },
+                      })}
+                      placeholder="Minimum Pay"
+                      className={input}
+                    />
+                    {errors.minSalary && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.minSalary.message}
+                      </p>
+                    )}
+                  </div>
 
-                      if (max && min >= max) {
-                        return "Minimum salary must be less than maximum salary";
-                      }
+                  {/* Max Salary */}
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      {...register("maxSalary", {
+                        required: "Maximum salary is required",
+                        validate: (value, formValues) => {
+                          const match = value.match(
+                            /^₹?\s*(\d{1,3}(?:,\d{3})*|\d+)(k|K)?$/
+                          );
+                          if (!match) {
+                            return "Invalid format. Example: 100k or ₹1,00,000";
+                          }
 
-                      if (min <= 0 || (max && max <= 0)) {
-                        return "Salary must be positive";
-                      }
+                          let max = parseInt(match[1].replace(/,/g, ""));
+                          if (match[2]) max *= 1000;
+                          if (max <= 0) return "Salary must be positive";
 
-                      return true;
-                    },
-                  })}
-                  placeholder="e.g. $80,000 - $120,000"
-                  className={input}
-                />
-                {errors.salaryRange && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.salaryRange.message}
-                  </p>
-                )}
+                          // compare with min salary if available
+                          const minValue = formValues.minSalary?.match(
+                            /^₹?\s*(\d{1,3}(?:,\d{3})*|\d+)(k|K)?$/
+                          );
+                          if (minValue) {
+                            let min = parseInt(minValue[1].replace(/,/g, ""));
+                            if (minValue[2]) min *= 1000;
+                            if (min >= max)
+                              return "Max salary must be greater than min salary";
+                          }
+
+                          return true;
+                        },
+                      })}
+                      placeholder="Maximum Pay"
+                      className={input}
+                    />
+                    {errors.maxSalary && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.maxSalary.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -259,23 +299,7 @@ const PostJobs = () => {
                 </select>
                 {errors.jobType && <ErrorMsg msg={errors.jobType.message} />}
               </div>
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Work Type *
-                </label>
-                <select
-                  {...register("workType", {
-                    required: "Work type is required",
-                  })}
-                  className={input}
-                >
-                  <option value="">Select work type</option>
-                  <option value="Remote">Remote</option>
-                  <option value="On-site">On-site</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
-                {errors.workType && <ErrorMsg msg={errors.workType.message} />}
-              </div>
+
               <div>
                 <label className="block font-medium text-sm text-gray-700 mb-1">
                   Experience Level *
@@ -287,9 +311,9 @@ const PostJobs = () => {
                   className={input}
                 >
                   <option value="">Select level</option>
-                  <option value="Entry">Entry</option>
-                  <option value="Mid">Mid</option>
-                  <option value="Senior">Senior</option>
+                  <option value="Entry">Entry Level (0 -1)</option>
+                  <option value="Mid">Mid Level (2-5)</option>
+                  <option value="Senior">Senior Level (5-10)</option>
                 </select>
                 {errors.experienceLevel && (
                   <ErrorMsg msg={errors.experienceLevel.message} />
@@ -298,111 +322,54 @@ const PostJobs = () => {
             </div>
           </div>
 
-          {/* Job Details */}
+          {/* Job Description PDF Upload */}
           <div>
             <h3 className="text-xl font-semibold text-gray-800 mb-1">
-              📄 Job Details
+              📄 Job Description (PDF Upload)
             </h3>
             <p className="text-gray-500 mb-4 text-sm">
-              Provide detailed information about the role and requirements
+              Upload a detailed Job Description in PDF format.
             </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Job Description *
-                </label>
-                <input
-                  {...register("description", {
-                    required: "Description is required",
-                  })}
-                  placeholder="Describe the role..."
-                  className={input}
-                />
-                {errors.description && (
-                  <ErrorMsg msg={errors.description.message} />
-                )}
-              </div>
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Requirements *
-                </label>
-                <input
-                  {...register("requirements", {
-                    required: "Requirements are required",
-                  })}
-                  placeholder="List the required qualifications..."
-                  className={input}
-                />
-                {errors.requirements && (
-                  <ErrorMsg msg={errors.requirements.message} />
-                )}
-              </div>
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Required Skills *
-                </label>
-                <input
-                  {...register("skills", { required: "Skills are required" })}
-                  placeholder="e.g. React, Node.js"
-                  className={input}
-                />
-                {errors.skills && <ErrorMsg msg={errors.skills.message} />}
-              </div>
 
-            </div>
-          </div>
+            <div>
+              {jdUrl ? (
+                <div className="flex items-center gap-3">
+                  <a
+                    href={jdUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    View Uploaded JD
+                  </a>
+                  <button
+                    type="button"
+                    onClick={removeJD}
+                    className="px-2 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-red-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => jdFileInputRef.current.click()}
+                  className="px-4 py-2 border border-gray-300 rounded-md bg-white shadow-sm hover:bg-gray-100"
+                >
+                  Upload JD (PDF)
+                </button>
+              )}
 
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-1">
-              📞 Contact Information
-            </h3>
-            <p className="text-gray-500 mb-4 text-sm">
-              How candidates can reach out and apply
-            </p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Contact Email *
-                </label>
-                <input
-                  {...register("contactEmail", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Invalid email format",
-                    },
-                  })}
-                  placeholder="careers@company.com"
-                  className={input}
-                />
-                {errors.contactEmail && (
-                  <ErrorMsg msg={errors.contactEmail.message} />
-                )}
-              </div>
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Company Website
-                </label>
-                <input
-                  {...register("companyWebsite")}
-                  placeholder="https://www.company.com"
-                  className={input}
-                />
-              </div>
-              <div>
-                <label className="block font-medium text-sm text-gray-700 mb-1">
-                  Application Deadline *
-                </label>
-                <input
-                  type="date"
-                  {...register("deadline", {
-                    required: "Deadline is required",
-                  })}
-                  className={input}
-                />
-              </div>
+              <input
+                ref={jdFileInputRef}
+                type="file"
+                accept="application/pdf"
+                hidden
+                onChange={handleJDChange}
+              />
             </div>
+
+            {jdError && <p className="text-red-500 text-sm mt-1">{jdError}</p>}
           </div>
 
           <div className="flex justify-end gap-4 mt-6">
@@ -427,8 +394,7 @@ const PostJobs = () => {
 };
 
 const input =
-  "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base bg-white shadow-sm";
-
+  "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base bg-white-200 shadow-sm";
 
 const ErrorMsg = ({ msg }) => (
   <p className="text-sm text-red-500 mt-1">{msg}</p>
